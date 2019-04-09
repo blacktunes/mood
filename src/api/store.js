@@ -60,3 +60,16 @@ export function login (userName) {
     }
   })
 }
+
+export function getNewMessage (id) {
+  return axios({
+    method: 'post',
+    url: `${url}/getNewMessage`,
+    headers: {
+      'Content-type': 'application/x-www-form-urlencoded;charset=UTF-8'
+    },
+    params: {
+      id: id
+    }
+  })
+}
