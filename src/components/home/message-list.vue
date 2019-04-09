@@ -30,7 +30,7 @@ export default {
 
 <style lang="stylus" rel="stylesheet/stylus" scoped>
 .message-wrapper
-  width 99%
+  width 100%
   margin 10px auto
   padding 10px 0
   background #fff

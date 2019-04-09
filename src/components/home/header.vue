@@ -1,6 +1,6 @@
 <template>
   <div class="header">
-    <span class="user-name">{{userName}}</span>
+    <span class="user-name" @click="nameClick">{{userName}}</span>
   </div>
 </template>
 
@@ -14,6 +14,13 @@ export default {
     ]),
     userName () {
       return this.isLogin ? getUser() : 'mood'
+    }
+  },
+  methods: {
+    nameClick () {
+      if (this.isLogin) {
+        this.$router.push('/userInfo')
+      }
     }
   }
 }

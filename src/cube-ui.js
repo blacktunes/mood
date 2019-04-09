@@ -8,7 +8,7 @@ import {
   Style,
   createAPI,
   // basic
-  // Button,
+  Button,
   // Loading,
   // Tip,
   // Toolbar,
@@ -49,7 +49,7 @@ import {
   // ScrollNavBar
 } from 'cube-ui'
 
-// Vue.use(Button)
+Vue.use(Button)
 // Vue.use(Loading)
 // Vue.use(Tip)
 // Vue.use(Toolbar)

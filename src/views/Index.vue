@@ -92,6 +92,8 @@ export default {
     this.setMessageList(getMessageList())
     if (getUser()) {
       this.setIsLogin(true)
+    } else {
+      this.setIsLogin(false)
     }
   }
 }
@@ -100,7 +102,6 @@ export default {
 <style lang="stylus" rel="stylesheet/stylus" scoped>
 .index-scroll
   z-index 100
-  margin 0 10px 0 10px
   .text
     text-align center
     margin 20px

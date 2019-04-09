@@ -26,6 +26,10 @@ export function saveUser (user) {
   return setLocalStorage('user', user)
 }
 
+export function delUser () {
+  return removeLocalStorage('user')
+}
+
 export function getMessageList () {
   if (!getLocalStorage('messageList')) {
     let list = []
