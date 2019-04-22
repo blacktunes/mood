@@ -1,6 +1,6 @@
 <template>
 <div>
-  <transition name="slide-up">
+  <transition name="fade">
     <div class="message-input-wrapper" v-show="inputShow">
       <div class="mask" @click="bgClick"></div>
       <cube-textarea class="message-input" v-model="value" indicator="indicator"></cube-textarea>
@@ -62,42 +62,34 @@ export default {
 </script>
 
 <style lang="stylus" rel="stylesheet/stylus" scoped>
-.message-input-wrapper
-  z-index 400
-  position absolute
-  bottom 0
-  height 100%
-  width 100%
-  .mask
-    z-index 450
+  @import '~@/assets/stylus/transition'
+  .message-input-wrapper
+    z-index 400
     position absolute
-    bottom 175px
+    bottom 0
     height 100%
     width 100%
-  .message-input
+    .mask
+      z-index 450
+      position absolute
+      bottom 175px
+      height 100%
+      width 100%
+    .message-input
+      position fixed
+      left 0
+      right 0
+      margin auto
+      bottom 75px
+      width 90%
+      height 100px
+      box-shadow 0 0 1px 2px #ddd
+  .icon-add
+    z-index 500
     position fixed
-    left 0
-    right 0
-    margin auto
-    bottom 75px
-    width 90%
-    height 100px
-.icon-add
-  z-index 500
-  position fixed
-  right 20px
-  bottom 20px
-  .icon
-    font-size 50px
-    color #666
-
- .slide-up-enter, .slide-up-leave-to {
-    transform: translate3d(0, 100%, 0)
-  }
-  .slide-up-enter-to, .slide-up-leave {
-    opacity: .5
-  }
-  .slide-up-enter-active, .slide-up-leave-active {
-    transition: all .3s ease-out
-  }
+    right 20px
+    bottom 20px
+    .icon
+      font-size 50px
+      color #666
 </style>

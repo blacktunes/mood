@@ -119,7 +119,9 @@ export default {
         return
       }
       getNewMessage(this.showMessageList[0].id).then(res => {
-        this.timer = setTimeout(() => {}, 1000 * 30)
+        this.timer = setTimeout(() => {
+          this.timer = null
+        }, 1000 * 30)
         if (res.status === 200) {
           if (res.data.newMessage > 0) {
             this.haveNewMessage = true
@@ -146,7 +148,7 @@ export default {
   },
   beforeDestroy () {
     if (this.timer) {
-      clearInterval(this.timer)
+      clearTimeout(this.timer)
     }
   }
 }

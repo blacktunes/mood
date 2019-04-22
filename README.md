@@ -1,16 +1,16 @@
 # mood(心情)
 
-## Project setup
+## 基于Vue的仿微博WebApp
+```
+demo地址: http://www.feizhouxianyu.cn/mood
+```
+
+### 安装依赖
 ```
 npm install
 ```
 
-### Compiles and hot-reloads for development
+### 启动项目
 ```
 npm run serve
-```
-
-### Compiles and minifies for production
-```
-npm run build
 ```
