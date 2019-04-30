@@ -1,5 +1,23 @@
 <template>
   <div class="register-wrapper">
+    <div class="upload-wrapper">
+      <cube-upload
+      class="upload"
+      :action="uploadAction"
+      :simultaneous-uploads="1"
+      @files-added="filesAdded"
+      v-model="files"
+      ref="upload">
+        <div class="clear-fix">
+          <cube-upload-file v-for="(file, i) in files" :file="file" :key="i"></cube-upload-file>
+          <cube-upload-btn :multiple="false">
+            <div>
+              <i>＋</i>
+            </div>
+          </cube-upload-btn>
+        </div>
+      </cube-upload>
+    </div>
     <div class="register-input">
       <span class="text">修改昵称</span>
       <input class="input" v-model="userName">
@@ -15,10 +33,30 @@ import { reviseUsername } from '@/api/store'
 export default {
   data () {
     return {
-      userName: ''
+      userName: '',
+      uploadAction: {
+        target: 'http://119.29.63.228:4000/upload',
+        fileName: 'avatar',
+        data: {
+          username: getUser()
+        }
+      },
+      files: []
     }
   },
   methods: {
+    filesAdded (files) {
+      const file = files[0]
+      if (file.size > 500 * 1024) {
+        file.ignore = true
+        this.$createToast({
+          type: 'warn',
+          time: 1000,
+          txt: 'You selected > 500k files'
+        }).show()
+      }
+      file && this.$refs.upload.removeFile(file)
+    },
     click () {
       if (this.userName === getUser()) {
         return
@@ -71,15 +109,14 @@ export default {
 .register-wrapper
   height 100vh
   width 100%
+  display flex
+  flex-direction column
+  align-items center
   .register-input
+    flex 1
     display flex
     align-items center
     flex-direction column
-    position absolute
-    left 0
-    right 0
-    top 30%
-    width 60%
     margin auto
     .text
       margin-bottom 10px
@@ -97,4 +134,45 @@ export default {
     bottom 20px
     left 50%
     transform translate(-50%, 0)
+
+  .upload-wrapper
+    flex 0 0 30%
+    .upload
+      overflow hidden
+      width 100px
+      height 100px
+      margin-top 100%
+      border 1px solid black
+      border-radius 50%
+    & >>> .cube-upload
+      .cube-upload-file, .cube-upload-btn
+        margin: 0
+        height: 100px
+      .cube-upload-file
+        margin: 0
+        + .cube-upload-btn
+          margin-top: -100px
+          opacity: 0
+      .cube-upload-file-def
+        width: 100%
+        height: 100%
+        .cubeic-wrong
+          display: none
+      .cube-upload-btn
+        display: flex
+        align-items: center
+        justify-content: center
+        > div
+          text-align: center
+        i
+          display: inline-flex
+          align-items: center
+          justify-content: center
+          width: 50px
+          height: 50px
+          font-size: 32px
+          line-height: 1
+          font-style: normal
+          color: #333
+          border-radius: 50%
 </style>

@@ -10,7 +10,7 @@ import {
   // basic
   Button,
   // Loading,
-  // Tip,
+  Tip,
   // Toolbar,
   // TabBar,
   // TabPanels,
@@ -25,7 +25,7 @@ import {
   // Switch,
   // Rate,
   // Validator,
-  // Upload,
+  Upload,
   // Form,
   // // popup
   // Popup,
@@ -51,7 +51,7 @@ import {
 
 Vue.use(Button)
 // Vue.use(Loading)
-// Vue.use(Tip)
+Vue.use(Tip)
 // Vue.use(Toolbar)
 // Vue.use(TabBar)
 // Vue.use(TabPanels)
@@ -65,7 +65,7 @@ Vue.use(Textarea)
 // Vue.use(Switch)
 // Vue.use(Rate)
 // Vue.use(Validator)
-// Vue.use(Upload)
+Vue.use(Upload)
 // Vue.use(Form)
 // Vue.use(Popup)
 Vue.use(Toast)

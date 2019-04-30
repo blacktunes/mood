@@ -28,12 +28,13 @@ export default {
 
 <style lang="stylus" rel="stylesheet/stylus" scoped>
 .header
+  position relative
+  z-index 200
   display flex
-  height 20px
-  padding 10px 0 10px 0
-  margin-bottom 5px
+  height 40px
   text-align center
   background #fff
+  box-shadow 0px 1px 1px #bbb
   .user-name
     margin auto
     font-size 20px

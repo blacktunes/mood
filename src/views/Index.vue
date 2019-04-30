@@ -6,23 +6,47 @@
                    @pulling-down="onPullingDown"
                    @pulling-up="onPullingUp"
                    @scroll="scroll"
+                   @scroll-end="scrollEnd"
                    :options="options"
                    :data="showMessageList"
-                   :scroll-events="['scroll']"
+                   :scroll-events="['scroll', 'scroll-end']"
                    ref="scroll">
-          <transition-group name="fade">
-            <div v-for="item in showMessageList" :key="item.id">
-              <message-list :item="item"></message-list>
+        <transition-group name="fade">
+          <div v-for="item in showMessageList" :key="item.id">
+            <message-list :item="item"></message-list>
+          </div>
+        </transition-group>
+        <div class="text" v-show="listEmpty">暂无内容</div>
+        <template slot="pulldown" slot-scope="props">
+          <div v-if="props.pullDownRefresh"
+            class="cube-pulldown-wrapper"
+            :style="props.pullDownStyle">
+            <div v-if="props.beforePullDown"
+              class="before-trigger"
+              :style="{paddingBottom: props.bubbleY + 'px'}">
+              <span :class="{rotate: props.bubbleY > 0}">↓</span>
             </div>
-          </transition-group>
-          <div class="text" v-show="listEmpty">暂无内容</div>
+            <div class="after-trigger" v-else>
+              <div v-show="props.isPullingDown" class="loading">
+                <cube-loading></cube-loading>
+              </div>
+              <transition name="success">
+                <div v-show="!props.isPullingDown" class="text-wrapper">
+                  <span class="refresh-text">{{pullDownTxt}}</span>
+                </div>
+              </transition>
+            </div>
+          </div>
+        </template>
       </cube-scroll>
       <message-button></message-button>
       <message-input @success="onPullingDown"></message-input>
-      <div class="new-message" v-show="haveNewMessage">
-        <span class="cubeic-select"></span>
-        <span style="margin-left: 5px">查看新消息</span>
-      </div>
+      <transition name="fade">
+        <div class="new-message" v-show="haveNewMessage">
+          <span class="cubeic-select"></span>
+          <span style="margin-left: 5px">查看新消息</span>
+        </div>
+      </transition>
     </div>
   </div>
 </template>
@@ -68,14 +92,14 @@ export default {
       return list.reverse()
     },
     indexHeight () {
-      return document.documentElement.clientHeight - 50 + 'px'
+      return document.documentElement.clientHeight - 40 + 'px'
     },
     options () {
       return {
         pullDownRefresh: {
-          threshold: 50,
+          threshold: 46,
           txt: this.pullDownTxt,
-          stopTime: 500
+          stopTime: 1000
         },
         pullUpLoad: {
           txt: { noMore: '已经到地底了' }
@@ -91,26 +115,39 @@ export default {
       setMessageList: 'SET_MESSAGE_LIST'
     }),
     scroll (e) {
-      if (Math.abs(e.y) > 45) {
+      if (Math.abs(e.y) > 40) {
         this.haveNewMessage = false
+        if (e.y > 50) {
+          this.$refs.scroll.scrollTo(0, 50)
+        }
       } else if (e.y === 0) {
         this._getNewMessage()
       }
     },
+    scrollEnd (e) {
+      if (e.y > 50) {
+        this.$refs.scroll.scrollTo(0, 0, 500)
+      }
+    },
     onPullingUp () {
-      this.$refs.scroll.forceUpdate()
+      setTimeout(() => {
+        this.$refs.scroll.forceUpdate()
+        if (this.listEmpty) {
+          this.haveNewMessage = true
+          this.$refs.scroll.scrollTo(0, 0, 500)
+        }
+      }, 1000)
     },
     onPullingDown () {
       messageList().then((res) => {
         if (res.status === 200) {
           this.listLength = res.data.messageList.length - this.messageList.length
-          this.$refs.scroll.forceUpdate()
           this.$refs.scroll.disable()
+          saveMessageList(res.data.messageList)
+          this.setMessageList(res.data.messageList)
           setTimeout(() => {
-            saveMessageList(res.data.messageList)
-            this.setMessageList(res.data.messageList)
             this.$refs.scroll.enable()
-          }, 1100)
+          }, 1450)
         }
       })
     },
@@ -118,7 +155,8 @@ export default {
       if (this.timer) {
         return
       }
-      getNewMessage(this.showMessageList[0].id).then(res => {
+      const messageId = !this.listEmpty ? this.showMessageList[0].id : 0
+      getNewMessage(messageId).then(res => {
         this.timer = setTimeout(() => {
           this.timer = null
         }, 1000 * 30)
@@ -137,7 +175,7 @@ export default {
     } else {
       this.setIsLogin(false)
     }
-    if (this.showMessageList.length > 0) {
+    if (!this.listEmpty) {
       this._getNewMessage()
       // this.timer = setInterval(() => {
       //   this._getNewMessage()
@@ -159,7 +197,7 @@ export default {
   z-index 100
   .text
     text-align center
-    margin-top 50px
+    margin-top 80px
 .new-message
   position absolute
   top 60px
@@ -172,10 +210,39 @@ export default {
   box-shadow 0 0 1px 2px #ddd
   background #fff
 
-.fade-enter, .fade-leave-to {
+.cube-pulldown-wrapper
+  text-align: center
+  .before-trigger
+    height: auto
+    font-size: 30px
+    align-self: flex-end
+    span
+      display: inline-block
+      line-height: 1
+      transition: all 0.3s
+      color: #666
+      padding: 5px 0
+      &.rotate
+        transform: rotate(180deg)
+  .after-trigger
+    flex: 1
+    margin: 0
+    .text-wrapper
+      margin: 0 auto
+      margin-top: 10px
+      padding: 5px 0
+      color: #498ec2
+      background-color: #d6eaf8
+    & >>> .cube-loading-spinners
+      margin: auto
+.success-enter-active, .success-leave-active
+  transition: width .5s
+.success-enter, .success-leave-to
+  width: 70%
+.success-enter-to, .success-leave
+  width: 100%
+.fade-enter, .fade-leave-to
   opacity: 0
-}
-.fade-enter-active, .fade-leave-active {
+.fade-enter-active, .fade-leave-active
   transition: all .2s linear;
-}
 </style>
