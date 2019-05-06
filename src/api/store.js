@@ -10,10 +10,10 @@ export function messageList () {
   })
 }
 
-export function addMessageList (message) {
+export function addMessage (message) {
   return axios({
     method: 'post',
-    url: `${url}/addMessageList`,
+    url: `${url}/addMessage`,
     headers: {
       'Content-type': 'application/x-www-form-urlencoded;charset=UTF-8'
     },

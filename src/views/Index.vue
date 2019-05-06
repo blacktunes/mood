@@ -13,7 +13,7 @@
                    ref="scroll">
         <transition-group name="fade">
           <div v-for="item in showMessageList" :key="item.id">
-            <message-list :item="item"></message-list>
+            <message-list :item="item" @loadImage="loadImage"></message-list>
           </div>
         </transition-group>
         <div class="text" v-show="listEmpty">暂无内容</div>
@@ -96,16 +96,30 @@ export default {
     },
     options () {
       return {
-        pullDownRefresh: {
+        pullDownRefresh: this.pullDownRefreshOptions,
+        pullUpLoad: this.pullUpLoadOptions,
+        click: true,
+        probeType: 1
+      }
+    },
+    pullUpLoadOptions () {
+      if (this.listEmpty) {
+        return false
+      } else {
+        return {
+          txt: { noMore: '已经到地底了' }
+        }
+      }
+    },
+    pullDownRefreshOptions () {
+      if (this.showMessageList) {
+        return {
           threshold: 46,
           txt: this.pullDownTxt,
           stopTime: 1000
-        },
-        pullUpLoad: {
-          txt: { noMore: '已经到地底了' }
-        },
-        click: true,
-        probeType: 1
+        }
+      } else {
+        return false
       }
     }
   },
@@ -114,13 +128,19 @@ export default {
       setIsLogin: 'SET_IS_LOGIN',
       setMessageList: 'SET_MESSAGE_LIST'
     }),
+    loadImage () {
+      this.$refs.scroll.refresh()
+    },
     scroll (e) {
-      if (Math.abs(e.y) > 40) {
+      if (e.y < 0 && this.listEmpty) {
+        this.$refs.scroll.scrollTo(0, 0)
+      }
+      if (Math.abs(e.y) > 35) {
         this.haveNewMessage = false
         if (e.y > 50) {
           this.$refs.scroll.scrollTo(0, 50)
         }
-      } else if (e.y === 0) {
+      } else if (e.y === 0 || -1) {
         this._getNewMessage()
       }
     },
@@ -132,10 +152,6 @@ export default {
     onPullingUp () {
       setTimeout(() => {
         this.$refs.scroll.forceUpdate()
-        if (this.listEmpty) {
-          this.haveNewMessage = true
-          this.$refs.scroll.scrollTo(0, 0, 500)
-        }
       }, 1000)
     },
     onPullingDown () {
@@ -150,22 +166,35 @@ export default {
           }, 1450)
         }
       })
+        .catch(() => {
+          const toast = this.$createToast({
+            txt: '网络异常',
+            time: 2000,
+            type: 'error'
+          })
+          toast.show()
+          this.$refs.scroll.forceUpdate()
+        })
     },
     _getNewMessage () {
-      if (this.timer) {
-        return
-      }
-      const messageId = !this.listEmpty ? this.showMessageList[0].id : 0
-      getNewMessage(messageId).then(res => {
+      if (this.listEmpty) {
+        this.haveNewMessage = true
+      } else {
+        if (this.timer) {
+          return
+        }
         this.timer = setTimeout(() => {
           this.timer = null
         }, 1000 * 30)
-        if (res.status === 200) {
-          if (res.data.newMessage > 0) {
-            this.haveNewMessage = true
+        const messageId = !this.listEmpty ? this.showMessageList[0].id : 0
+        getNewMessage(messageId).then(res => {
+          if (res.status === 200) {
+            if (res.data.newMessage > 0) {
+              this.haveNewMessage = true
+            }
           }
-        }
-      })
+        })
+      }
     }
   },
   created () {
@@ -175,14 +204,7 @@ export default {
     } else {
       this.setIsLogin(false)
     }
-    if (!this.listEmpty) {
-      this._getNewMessage()
-      // this.timer = setInterval(() => {
-      //   this._getNewMessage()
-      // }, 1000 * 60 * 5)
-    } else {
-      this.haveNewMessage = true
-    }
+    this._getNewMessage()
   },
   beforeDestroy () {
     if (this.timer) {

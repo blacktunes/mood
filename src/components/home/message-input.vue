@@ -4,37 +4,75 @@
     <div class="message-input-wrapper" v-if="inputShow">
       <div class="mask" @click="bgClick"></div>
       <div class="mask2"></div>
-      <cube-textarea class="message-input" v-model="value" indicator="indicator" ref="textarea"></cube-textarea>
-      <input class="slider" type="range" min="0" max="100" step="1" value="50" @input="change" ref="slider">
+      <span class="add-pic cubeic-picture" @click="addPic"></span>
+      <cube-textarea class="message-input"
+                     v-model="value"
+                     indicator="indicator"
+                     ref="textarea"></cube-textarea>
+      <input class="slider"
+             type="range"
+             min="0"
+             max="100"
+             step="1"
+             value="50"
+             @input="change"
+             @touchstart="inputTouch"
+             @touchmove="inputMove"
+             ref="slider">
       <span class="cubeic-like like-icon" @click="showTip"></span>
       <div class="icon-mask" ref="likeIcon">
         <span class="cubeic-like like-icon2" @click="showTip"></span>
       </div>
-      <cube-tip :offsetLeft="37" ref="tip" direction="top" class="tip" >心情指数:{{moodNum}}</cube-tip>
+      <div class="icon-mask2" ref="likeIcon2">
+        <span class="cubeic-like like-icon3" @click="showTip"></span>
+      </div>
+      <cube-tip :offsetLeft="37" ref="tip" direction="top" class="tip" >心情指数:{{numTween}}</cube-tip>
     </div>
   </transition>
   <div class="icon-add" v-if="inputShow">
     <i class="cubeic-right icon" @click="btnClick"></i>
   </div>
+  <div class="pic-upload" v-show="isAddPic">
+    <cube-upload class="upload" :max="9" :auto="false" :action="uploadAction" ref="upload" @file-error="fileError" v-model="picFiles"></cube-upload>
+    <cube-button class="upload-btn"  :outline="true" @click="picUpload">Submit</cube-button>
+  </div>
 </div>
 </template>
 
 <script type="text/ecmascript-6">
+import TWEEN from '@tweenjs/tween.js'
 import { getUser } from '@/assets/js/localStorage'
 import { mapState, mapMutations } from 'vuex'
-import { addMessageList } from '@/api/store'
+import { addMessage } from '@/api/store'
 import { colorArr } from '@/assets/js/color'
 
 export default {
   data () {
     return {
       show: false,
+      isAddPic: false,
       indicator: {
         negative: true,
         remain: true
       },
       value: '',
-      moodNum: 0
+      pic: [],
+      picFiles: [],
+      moodNum: 0,
+      numTween: 0,
+      uploadAction: {
+        target: 'http://119.29.63.228:4000/picUpload',
+        fileName: 'pic',
+        checkSuccess: (res) => {
+          if (res.ERR_CODE === 0) {
+            this.pic.push(res.filename)
+            if (this.pic.length === this.picFiles.length) {
+              this._addMessage()
+            }
+            return true
+          }
+        }
+      }
     }
   },
   computed: {
@@ -47,6 +85,40 @@ export default {
       setInputShow: 'SET_INPUT_SHOW',
       setMessageList: 'SET_MESSAGE_LIST'
     }),
+    filesAdded (files) {
+      // 上传文件校验
+      const file = files[0]
+      if (file.size > 500 * 1024) {
+        file.ignore = true
+        this.$createToast({
+          type: 'warn',
+          time: 1000,
+          txt: 'You selected > 500k files'
+        }).show()
+      }
+      file && this.$refs.upload.removeFile(file)
+    },
+    addPic () {
+      this.isAddPic = true
+    },
+    picUpload () {
+      this.isAddPic = false
+    },
+    fileError (file) {
+      console.log(file)
+    },
+    inputTouch () {
+      this.$refs.likeIcon.style.transition = 'height 0.2s linear'
+      this.$refs.likeIcon2.style.transition = 'height 0.2s linear'
+      this.$refs.slider.style.transition = 'background 0.2s linear'
+      this.$refs.textarea.$el.children[0].style.transition = 'border 0.2s linear'
+    },
+    inputMove () {
+      this.$refs.likeIcon.style.transition = ''
+      this.$refs.likeIcon2.style.transition = ''
+      this.$refs.slider.style.transition = ' 0.2s linear'
+      this.$refs.textarea.$el.children[0].style.transition = ''
+    },
     showTip () {
       this.$refs.tip.show()
     },
@@ -55,22 +127,30 @@ export default {
       this.value = ''
       this.moodNum = 0
       this.$refs.textarea.$el.children[0].style.border = ''
+      this.pic = []
+      this.picFiles = []
+      this.$refs.upload.pause()
+      this.isAddPic = false
+      if (this.uploadToast) {
+        this.uploadToast.hide()
+      }
     },
     btnClick () {
-      if (this.value.length < 1) {
+      if (this.value.length < 1 && this.picFiles.length < 1) {
         return
       }
-      addMessageList({
-        author: getUser(),
-        text: this.value,
-        time: new Date().toLocaleString(),
-        mood: this.$refs.slider.value
-      }).then((res) => {
-        if (res.status === 200) {
-          this.$emit('success')
-        }
-      })
-      this.bgClick()
+      if (this.picFiles.length > 0) {
+        this.$refs.upload.start()
+        this.isAddPic = true
+        var uploadToast = this.$createToast({
+          txt: '正在上传图片···',
+          time: 0,
+          mask: true
+        }, false)
+        uploadToast.show()
+      } else {
+        this._addMessage()
+      }
     },
     change () {
       this.showTip()
@@ -80,9 +160,58 @@ export default {
       this.$refs.textarea.$el.children[0].style.border = `1.5px solid ${colorArr[mood]}`
       if (mood > 50) {
         this.$refs.likeIcon.style.height = 24 * (mood - 50) / 50 + 'px'
+        this.$refs.likeIcon2.style.height = ''
+      } else if (mood < 50) {
+        this.$refs.likeIcon2.style.height = 24 * mood / 50 + 'px'
+        this.$refs.likeIcon.style.height = ''
       } else {
+        this.$refs.likeIcon2.style.height = ''
         this.$refs.likeIcon.style.height = ''
       }
+    },
+    _addMessage () {
+      var toast = this.$createToast({
+        txt: '发送失败',
+        time: 2000,
+        type: 'error'
+      }, false)
+      addMessage({
+        author: getUser(),
+        text: this.value,
+        time: new Date().toLocaleString(),
+        mood: this.$refs.slider.value,
+        pic: this.pic.join('|')
+      }).then((res) => {
+        if (res.status === 200) {
+          this.$emit('success')
+          this.bgClick()
+        } else {
+          toast.show()
+        }
+      })
+        .catch((e) => {
+          toast.show()
+        })
+    }
+  },
+  watch: {
+    moodNum (newNum, oldNum) {
+      new TWEEN.Tween({
+        number: oldNum
+      })
+        .to({
+          number: newNum
+        }, 300)
+        .onUpdate(tween => {
+          this.numTween = tween.number.toFixed(0)
+        })
+        .start()
+      function animate () {
+        if (TWEEN.update()) {
+          requestAnimationFrame(animate)
+        }
+      }
+      animate()
     }
   }
 }
@@ -98,16 +227,23 @@ export default {
     width 100%
     .mask
       position absolute
-      bottom 190px
-      height calc(100% - 190px)
+      bottom 210px
+      height calc(100% - 210px)
       width 100%
       z-index 450
     .mask2
       position absolute
       bottom 0
-      height 190px
+      height 210px
       width 100%
       background rgba(222,222,222,0.9)
+    .add-pic
+      position fixed
+      left 25px
+      bottom 180px
+      z-index 500
+      font-size 24px
+      color #666
     .message-input
       position fixed
       left 0
@@ -117,6 +253,8 @@ export default {
       width 90%
       height 100px
       box-shadow 0 0 1px 2px #ddd
+      & >>> .cube-textarea
+        border 1.5px solid transparent
   .icon-add
     z-index 500
     position fixed
@@ -157,15 +295,16 @@ export default {
     position fixed
     bottom 32px
     left 25px
-    z-index 1000
+    z-index 800
     font-size 24px
-    color #fff
+    color #000
   .icon-mask
     overflow hidden
     position fixed
     bottom 32px
     left 25px
     z-index 1000
+    height 0
     width 24px
     .like-icon2
       z-index 500
@@ -174,6 +313,21 @@ export default {
       left 0
       font-size 24px
       color #666
+  .icon-mask2
+    overflow hidden
+    position fixed
+    bottom 32px
+    left 25px
+    z-index 900
+    height 24px
+    width 24px
+    .like-icon3
+      z-index 500
+      position absolute
+      bottom 0
+      left 0
+      font-size 24px
+      color #fff
   .tip
     position fixed
     bottom 4px
@@ -182,4 +336,35 @@ export default {
     padding 3px 8px
     & >>> .cube-tip-close
       display none
+  .pic-upload
+    position fixed
+    left 0
+    top 0
+    width 100%
+    height 100%
+    background #ddd
+    z-index 500
+    .upload
+      margin 20px 2px 20px 10px
+    & >>> .cube-upload-def
+      display flex
+      flex-flow row wrap
+      margin 0
+    & >>> .cube-upload-btn
+      flex 0 0 33.33%
+      width 30vw
+      margin 5px 0
+    & >>> .cube-upload-btn-def
+      width 30vw
+      height 30vw
+    & >>> .cube-upload-file
+      flex 0 0 33.33%
+      width 30vw
+      margin 5px 0
+    & >>> .cube-upload-file-def
+      width 30vw
+      height 30vw
+  .upload-btn
+    width 95%
+    margin auto
 </style>

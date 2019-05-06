@@ -17,6 +17,11 @@
     <div class="message-item">
       <span class="message-text">{{item.text}}</span>
     </div>
+    <div class="mseeage-pic-wrapper">
+      <div :class="picCls" v-for="(pic, index) in item.pic" :key="index">
+        <img :class="picCls2" :src="pic" @load="loadImage">
+      </div>
+    </div>
   </div>
 </template>
 
@@ -33,6 +38,17 @@ export default {
   computed: {
     labelColor () {
       return this.item.mood ? `border-color: transparent ${colorArr[this.item.mood]} transparent transparent` : ''
+    },
+    picCls () {
+      return this.item.pic.length === 1 ? '' : 'message-pic'
+    },
+    picCls2 () {
+      return this.item.pic.length === 1 ? 'pic1' : 'pic2'
+    }
+  },
+  methods: {
+    loadImage () {
+      this.$emit('loadImage')
     }
   }
 }
@@ -84,5 +100,17 @@ export default {
     transform translate(-100%, 0)
     border-style: solid
     border-width: 0 30px 30px 0
-    border-color: transparent #fff transparent transparent
+    border-color: transparent
+  .mseeage-pic-wrapper
+    width 100%
+    display flex
+    flex-flow row wrap
+    .message-pic
+      flex 0 0 33%
+      .pic2
+        width 100%
+        margin 1.5px
+    .pic1
+      max-width 95%
+      margin 5px
 </style>
