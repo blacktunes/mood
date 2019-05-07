@@ -19,7 +19,7 @@
     </div>
     <div class="mseeage-pic-wrapper">
       <div :class="picCls" v-for="(pic, index) in item.pic" :key="index">
-        <img :class="picCls2" :src="pic" @load="loadImage">
+        <img :class="picCls2" :src="pic.split('.' + pic.split('.').pop())[0] + '-less.jpg'" @load="loadImage">
       </div>
     </div>
   </div>
@@ -40,10 +40,10 @@ export default {
       return this.item.mood ? `border-color: transparent ${colorArr[this.item.mood]} transparent transparent` : ''
     },
     picCls () {
-      return this.item.pic.length === 1 ? '' : 'message-pic'
+      return this.item.pic.length === 1 ? '' : this.item.pic.length === 2 || this.item.pic.length === 4 ? 'message-pic2' : 'message-pic3'
     },
     picCls2 () {
-      return this.item.pic.length === 1 ? 'pic1' : 'pic2'
+      return this.item.pic.length === 1 ? 'pic1' : 'pic'
     }
   },
   methods: {
@@ -102,15 +102,23 @@ export default {
     border-width: 0 30px 30px 0
     border-color: transparent
   .mseeage-pic-wrapper
-    width 100%
+    width 96%
+    max-width 500px
+    margin auto
     display flex
     flex-flow row wrap
-    .message-pic
-      flex 0 0 33%
-      .pic2
+    .message-pic3
+      flex 0 0 33.33%
+      .pic
         width 100%
-        margin 1.5px
+        margin 1.5px auto
+    .message-pic2
+      flex 0 0 50%
+      .pic
+        width 100%
+        margin 1.5px auto
     .pic1
-      max-width 95%
-      margin 5px
+      width 100%
+      max-width 375px
+      margin 5px auto
 </style>

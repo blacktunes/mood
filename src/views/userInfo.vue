@@ -29,13 +29,13 @@
 
 <script type="text/ecmascript-6">
 import { saveUser, getUser, delUser } from '@/assets/js/localStorage'
-import { reviseUsername } from '@/api/store'
+import { reviseUsername, serverUrl } from '@/api/store'
 export default {
   data () {
     return {
       userName: '',
       uploadAction: {
-        target: 'http://119.29.63.228:4000/upload',
+        target: `${serverUrl}/upload`,
         fileName: 'avatar',
         data: {
           username: getUser()

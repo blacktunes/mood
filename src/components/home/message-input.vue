@@ -5,6 +5,7 @@
       <div class="mask" @click="bgClick"></div>
       <div class="mask2"></div>
       <span class="add-pic cubeic-picture" @click="addPic"></span>
+      <span class="pic-number" v-show="picNumberShow">{{picFiles.length}}</span>
       <cube-textarea class="message-input"
                      v-model="value"
                      indicator="indicator"
@@ -33,7 +34,7 @@
     <i class="cubeic-right icon" @click="btnClick"></i>
   </div>
   <div class="pic-upload" v-show="isAddPic">
-    <cube-upload class="upload" :max="9" :auto="false" :action="uploadAction" ref="upload" @file-error="fileError" v-model="picFiles"></cube-upload>
+    <cube-upload class="upload" :max="9" :auto="false" :action="uploadAction" ref="upload" @files-added="filesAdded" @file-error="fileError" v-model="picFiles"></cube-upload>
     <cube-button class="upload-btn"  :outline="true" @click="picUpload">Submit</cube-button>
   </div>
 </div>
@@ -43,7 +44,7 @@
 import TWEEN from '@tweenjs/tween.js'
 import { getUser } from '@/assets/js/localStorage'
 import { mapState, mapMutations } from 'vuex'
-import { addMessage } from '@/api/store'
+import { addMessage, serverUrl } from '@/api/store'
 import { colorArr } from '@/assets/js/color'
 
 export default {
@@ -61,7 +62,7 @@ export default {
       moodNum: 0,
       numTween: 0,
       uploadAction: {
-        target: 'http://119.29.63.228:4000/picUpload',
+        target: `${serverUrl}/picUpload`,
         fileName: 'pic',
         checkSuccess: (res) => {
           if (res.ERR_CODE === 0) {
@@ -78,7 +79,10 @@ export default {
   computed: {
     ...mapState([
       'inputShow'
-    ])
+    ]),
+    picNumberShow () {
+      return this.picFiles.length > 0
+    }
   },
   methods: {
     ...mapMutations({
@@ -87,16 +91,16 @@ export default {
     }),
     filesAdded (files) {
       // 上传文件校验
-      const file = files[0]
-      if (file.size > 500 * 1024) {
-        file.ignore = true
-        this.$createToast({
-          type: 'warn',
-          time: 1000,
-          txt: 'You selected > 500k files'
-        }).show()
-      }
-      file && this.$refs.upload.removeFile(file)
+      // const file = files[0]
+      // if (file.size > 500 * 1024) {
+      //   file.ignore = true
+      //   this.$createToast({
+      //     type: 'warn',
+      //     time: 1000,
+      //     txt: 'You selected > 500k files'
+      //   }).show()
+      // }
+      // file && this.$refs.upload.removeFile(file)
     },
     addPic () {
       this.isAddPic = true
@@ -142,12 +146,12 @@ export default {
       if (this.picFiles.length > 0) {
         this.$refs.upload.start()
         this.isAddPic = true
-        var uploadToast = this.$createToast({
+        this.uploadToast = this.$createToast({
           txt: '正在上传图片···',
           time: 0,
           mask: true
         }, false)
-        uploadToast.show()
+        this.uploadToast.show()
       } else {
         this._addMessage()
       }
@@ -244,6 +248,19 @@ export default {
       z-index 500
       font-size 24px
       color #666
+    .pic-number
+      position fixed
+      left 48px
+      bottom 192px
+      z-index 500
+      width 15px
+      height 15px
+      border-radius 50%
+      background #666
+      color #eeeeee
+      font-size 10px
+      line-height 16px
+      text-align center
     .message-input
       position fixed
       left 0

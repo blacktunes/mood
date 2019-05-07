@@ -1,19 +1,19 @@
 import axios from 'axios'
 
-const url = 'http://119.29.63.228:4000'
-// const url = 'http://127.0.0.1:4000'
+export const serverUrl = 'http://119.29.63.228:4000'
+// export const serverUrl = 'http://127.0.0.1:4000'
 
 export function messageList () {
   return axios({
     method: 'get',
-    url: `${url}/messageList`
+    url: `${serverUrl}/messageList`
   })
 }
 
 export function addMessage (message) {
   return axios({
     method: 'post',
-    url: `${url}/addMessage`,
+    url: `${serverUrl}/addMessage`,
     headers: {
       'Content-type': 'application/x-www-form-urlencoded;charset=UTF-8'
     },
@@ -24,7 +24,7 @@ export function addMessage (message) {
 export function register (userName) {
   return axios({
     method: 'post',
-    url: `${url}/register`,
+    url: `${serverUrl}/register`,
     headers: {
       'Content-type': 'application/x-www-form-urlencoded;charset=UTF-8'
     },
@@ -37,7 +37,7 @@ export function register (userName) {
 export function reviseUsername (newName, oldName) {
   return axios({
     method: 'post',
-    url: `${url}/reviseUsername`,
+    url: `${serverUrl}/reviseUsername`,
     headers: {
       'Content-type': 'application/x-www-form-urlencoded;charset=UTF-8'
     },
@@ -51,7 +51,7 @@ export function reviseUsername (newName, oldName) {
 export function login (userName) {
   return axios({
     method: 'post',
-    url: `${url}/login`,
+    url: `${serverUrl}/login`,
     headers: {
       'Content-type': 'application/x-www-form-urlencoded;charset=UTF-8'
     },
@@ -64,7 +64,7 @@ export function login (userName) {
 export function getNewMessage (id) {
   return axios({
     method: 'post',
-    url: `${url}/getNewMessage`,
+    url: `${serverUrl}/getNewMessage`,
     headers: {
       'Content-type': 'application/x-www-form-urlencoded;charset=UTF-8'
     },
