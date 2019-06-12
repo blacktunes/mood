@@ -22,6 +22,10 @@ export default new Router({
       path: '/userInfo',
       name: 'userInfo',
       component: userInfo
+    },
+    {
+      path: '/detail',
+      component: () => import('./views/detail')
     }
   ]
 })

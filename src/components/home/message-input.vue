@@ -71,6 +71,14 @@ export default {
               this._addMessage()
             }
             return true
+          } else {
+            this.uploadToast.hide()
+            this.$createToast({
+              txt: '未知错误',
+              time: 2000,
+              type: 'error'
+            }, false).show()
+            return false
           }
         }
       }
@@ -174,14 +182,14 @@ export default {
       }
     },
     _addMessage () {
-      var toast = this.$createToast({
+      const toast = this.$createToast({
         txt: '发送失败',
         time: 2000,
         type: 'error'
       }, false)
       addMessage({
         author: getUser(),
-        text: this.value,
+        text: this.value.replace(/\n|\r\n/g, '<br/>'),
         time: new Date().toLocaleString(),
         mood: this.$refs.slider.value,
         pic: this.pic.join('|')
@@ -194,6 +202,7 @@ export default {
         }
       })
         .catch((e) => {
+          console.log(e)
           toast.show()
         })
     }
@@ -360,7 +369,7 @@ export default {
     width 100%
     height 100%
     background #ddd
-    z-index 500
+    z-index 600
     .upload
       margin 20px 2px 20px 10px
     & >>> .cube-upload-def

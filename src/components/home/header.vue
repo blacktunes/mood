@@ -1,6 +1,7 @@
 <template>
   <div class="header">
     <span class="user-name" @click="nameClick">{{userName}}</span>
+    <span class="icon cubeic-more" @click="iconClick"></span>
   </div>
 </template>
 
@@ -17,6 +18,11 @@ export default {
     }
   },
   methods: {
+    iconClick () {
+      if (this.isLogin) {
+        this.$emit('icon-click')
+      }
+    },
     nameClick () {
       if (this.isLogin) {
         this.$router.push('/userInfo')
@@ -29,7 +35,7 @@ export default {
 <style lang="stylus" rel="stylesheet/stylus" scoped>
 .header
   position relative
-  z-index 200
+  z-index 300
   display flex
   height 40px
   text-align center
@@ -38,4 +44,9 @@ export default {
   .user-name
     margin auto
     font-size 20px
+  .icon
+    position fixed
+    top 10px
+    left 5px
+    color #666
 </style>

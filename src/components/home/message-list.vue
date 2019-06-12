@@ -1,5 +1,5 @@
 <template>
-  <div class="message-wrapper">
+  <div class="message-wrapper" ref="message" @click="click">
     <div class="message-title">
       <div class="message-img">
         <img class="img" :src="item.img">
@@ -15,12 +15,16 @@
     </div>
     <div class="label" :style="labelColor"></div>
     <div class="message-item">
-      <span class="message-text">{{item.text}}</span>
+      <span class="message-text" v-html="item.text"></span>
     </div>
     <div class="mseeage-pic-wrapper">
       <div :class="picCls" v-for="(pic, index) in item.pic" :key="index">
-        <img :class="picCls2" :src="pic.split('.' + pic.split('.').pop())[0] + '-less.jpg'" @load="loadImage">
+        <img :class="picCls2" :src="pic.split('.' + pic.split('.').pop())[0] + '-less.jpg'" @load="loadImage" :data-large="pic" v-gallery="item.id" @click.stop>
       </div>
+    </div>
+    <div class="message-btn">
+      <span class="cubeic-message reply-btn"></span>
+      <span class="reply-text">{{item.reply || 0}}</span>
     </div>
   </div>
 </template>
@@ -37,7 +41,7 @@ export default {
   },
   computed: {
     labelColor () {
-      return this.item.mood ? `border-color: transparent ${colorArr[this.item.mood]} transparent transparent` : ''
+      return this.item.mood === 0 ? `border-color: transparent ${colorArr[0]} transparent transparent` : `border-color: transparent ${colorArr[this.item.mood]}`
     },
     picCls () {
       return this.item.pic.length === 1 ? '' : this.item.pic.length === 2 || this.item.pic.length === 4 ? 'message-pic2' : 'message-pic3'
@@ -47,8 +51,33 @@ export default {
     }
   },
   methods: {
+    click () {
+      console.log(this.item)
+      this.$router.push('/detail')
+    },
     loadImage () {
-      this.$emit('loadImage')
+      this.$emit('load-image')
+    },
+    imgClick (pic, index) {
+      this.$emit('img-click', pic, index)
+    },
+    // 下面三个方法为touch事件
+    bgChange () {
+      this.timer = setTimeout(() => {
+        this.$refs.message.style.background = '#ccc'
+      }, 50)
+    },
+    bgRestore () {
+      setTimeout(() => {
+        this.$refs.message.style.background = '#fff'
+      }, 200)
+    },
+    touchMove () {
+      if (this.timer) {
+        clearTimeout(this.timer)
+        this.timer = null
+      }
+      this.$refs.message.style.background = '#fff'
     }
   }
 }
@@ -59,8 +88,9 @@ export default {
   position relative
   width 100%
   margin 10px auto
-  padding 10px 0
+  padding 10px 0 0 0
   background #fff
+  transition background 0.2s linear
   .message-title
     display flex
     align-items center
@@ -104,9 +134,9 @@ export default {
   .mseeage-pic-wrapper
     width 96%
     max-width 500px
-    margin auto
     display flex
     flex-flow row wrap
+    margin auto
     .message-pic3
       flex 0 0 33.33%
       .pic
@@ -121,4 +151,14 @@ export default {
       width 100%
       max-width 375px
       margin 5px auto
+  .message-btn
+    margin 10px auto 0 auto
+    height 20px
+    text-align right
+    color #666
+    .reply-btn
+      font-size 13px
+    .reply-text
+      font-size 15px
+      margin 0 5px
 </style>

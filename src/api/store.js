@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-export const serverUrl = 'http://119.29.63.228:4000'
+export const serverUrl = 'https://www.feizhouxianyu.cn:4001'
 // export const serverUrl = 'http://127.0.0.1:4000'
 
 export function messageList () {
@@ -70,6 +70,19 @@ export function getNewMessage (id) {
     },
     params: {
       id: id
+    }
+  })
+}
+
+export function getUserInfo (userName) {
+  return axios({
+    method: 'post',
+    url: `${serverUrl}/getUserInfo`,
+    headers: {
+      'Content-type': 'application/x-www-form-urlencoded;charset=UTF-8'
+    },
+    params: {
+      userName: userName
     }
   })
 }

@@ -38,6 +38,10 @@ export function getMessageList () {
   return getLocalStorage('messageList')
 }
 
+export function delMessageList () {
+  return removeLocalStorage('messageList')
+}
+
 export function saveMessageList (messageList) {
   return setLocalStorage('messageList', messageList)
 }

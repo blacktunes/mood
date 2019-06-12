@@ -9,7 +9,9 @@ export default new Vuex.Store({
     inputShow: false,
     // 是否已登录
     isLogin: false,
-    messageList: []
+    messageList: [],
+    // 是否首次启动
+    firstStart: true
   },
   mutations: {
     SET_INPUT_SHOW (state, flag) {
@@ -20,6 +22,9 @@ export default new Vuex.Store({
     },
     SET_MESSAGE_LIST (state, list) {
       state.messageList = list
+    },
+    SET_FIRST_START (state, flag) {
+      state.firstStart = flag
     }
   },
   getters: {
