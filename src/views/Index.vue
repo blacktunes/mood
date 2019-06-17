@@ -9,11 +9,11 @@
                    @scroll="scroll"
                    @scroll-end="scrollEnd"
                    :options="options"
-                   :data="showMessageList"
+                   :data="messageList"
                    :scroll-events="['scroll', 'scroll-end']"
                    ref="scroll">
         <transition-group name="fade">
-          <div v-for="item in showMessageList" :key="item.id">
+          <div v-for="item in messageList" :key="item.id">
             <message-list :item="item"></message-list>
           </div>
         </transition-group>
@@ -43,13 +43,10 @@
       <message-button></message-button>
       <message-input @success="onPullingDown"></message-input>
       <transition name="fade">
-        <div class="new-message" v-show="haveNewMessage">
+        <div class="new-message" v-show="showNewMessageTip">
           <span class="cubeic-select"></span>
           <span style="margin-left: 5px">查看新消息</span>
         </div>
-      </transition>
-      <transition name="fade">
-        <div class="mask" v-show="maskShow"></div>
       </transition>
     </div>
   </div>
@@ -63,17 +60,17 @@ import MessageButton from '@/components/home/message-button'
 import MessageInput from '@/components/home/message-input'
 import { getMessageList, saveMessageList, getUser } from '@/assets/js/localStorage'
 import { mapMutations, mapState } from 'vuex'
-import { messageList, getNewMessage, getUserInfo } from '@/api/store'
+import { messageList, getNewMessage, getUserInfo, moreMessageList } from '@/api/store'
 
 export default {
   data () {
     return {
       listLength: 0,
       haveNewMessage: false,
+      showNewMessageTip: false,
       menuVisible: false,
       pic: [],
-      picShow: false,
-      maskShow: true
+      picShow: false
     }
   },
   components: {
@@ -86,10 +83,14 @@ export default {
   computed: {
     ...mapState([
       'messageList',
-      'firstStart'
+      'firstStart',
+      'homeScrollY'
     ]),
     messageId () {
-      return !this.listEmpty ? this.showMessageList[0].id : 0
+      return !this.listEmpty ? this.messageList[0].id : 0
+    },
+    lastId () {
+      return !this.listEmpty ? this.messageList[this.messageList.length - 1].id : 0
     },
     listEmpty () {
       if (this.messageList.length < 1) {
@@ -100,10 +101,6 @@ export default {
     },
     pullDownTxt () {
       return this.listLength === 0 ? '暂无新消息' : `已更新${this.listLength}条新消息`
-    },
-    showMessageList () {
-      let list = this.messageList
-      return list.reverse()
     },
     indexHeight () {
       return document.documentElement.clientHeight - 40 + 'px'
@@ -125,7 +122,7 @@ export default {
       }
     },
     pullDownRefreshOptions () {
-      if (this.showMessageList) {
+      if (this.messageList) {
         return {
           threshold: 46,
           txt: this.pullDownTxt,
@@ -140,7 +137,8 @@ export default {
     ...mapMutations({
       setIsLogin: 'SET_IS_LOGIN',
       setMessageList: 'SET_MESSAGE_LIST',
-      setFirstStart: 'SET_FIRST_START'
+      setFirstStart: 'SET_FIRST_START',
+      setHomeScrollY: 'SET_HOME_SCROLL_Y'
     }),
     iconClick () {
       this.$refs.menu.menuShow()
@@ -154,7 +152,7 @@ export default {
         this.$refs.scroll.scrollTo(0, 0)
       }
       if (Math.abs(e.y) > 35) {
-        this.haveNewMessage = false
+        this.showNewMessageTip = false
         if (e.y > 50) {
           this.$refs.scroll.scrollTo(0, 50)
         }
@@ -163,26 +161,35 @@ export default {
       }
     },
     scrollEnd (e) {
+      if (this.haveNewMessage) {
+        this.showNewMessageTip = true
+      }
+      this.setHomeScrollY(e.y)
       if (e.y > 50) {
         this.$refs.scroll.scrollTo(0, 0, 500)
       }
     },
     onPullingUp () {
-      setTimeout(() => {
-        this.$refs.scroll.forceUpdate()
-      }, 1000)
+      moreMessageList(this.messageList[this.messageList.length - 1].id).then((res) => {
+        if (res.status === 200 && res.data.messageList.length > 0) {
+          this.setMessageList(this.messageList.concat(res.data.messageList))
+          saveMessageList(this.messageList)
+        } else {
+          this.$refs.scroll.forceUpdate()
+        }
+      })
     },
     onPullingDown () {
-      getNewMessage(this.messageId).then(res => {
-        if (res.status === 200) {
-          if (res.data.newMessage > 0) {
-            messageList().then((res) => {
+      getNewMessage(this.messageId, this.lastId).then(numRes => {
+        if (numRes.status === 200) {
+          this._updataReply(numRes)
+          if (numRes.data.newMessage > 0) {
+            messageList(this.messageId).then((res) => {
               if (res.status === 200) {
-                console.log(res.data)
-                this.listLength = res.data.messageList.length - this.messageList.length
+                this.listLength = numRes.data.newMessage
                 this.$refs.scroll.disable()
-                saveMessageList(res.data.messageList)
-                this.setMessageList(res.data.messageList)
+                this.setMessageList(res.data.messageList.concat(this.messageList))
+                saveMessageList(this.messageList)
                 setTimeout(() => {
                   this.$refs.scroll.enable()
                 }, 1450)
@@ -210,7 +217,7 @@ export default {
     },
     _getNewMessage () {
       if (this.listEmpty) {
-        this.haveNewMessage = true
+        this.showNewMessageTip = true
       } else {
         if (this.timer) {
           return
@@ -218,31 +225,46 @@ export default {
         this.timer = setTimeout(() => {
           this.timer = null
         }, 1000 * 30)
-        getNewMessage(this.messageId).then(res => {
+        getNewMessage(this.messageId, this.lastId).then(res => {
           if (res.status === 200) {
+            this._updataReply(res)
             if (res.data.newMessage > 0) {
               this.haveNewMessage = true
+              this.showNewMessageTip = true
             }
           }
         })
       }
+    },
+    _updataReply (res) {
+      const tempList = this.messageList
+      tempList.map(item => {
+        res.data.newReply.forEach(reply => {
+          if (reply.id === item.id) {
+            item.reply = reply.reply
+          }
+        })
+      })
+      this.setMessageList(tempList)
+      saveMessageList(tempList)
     }
   },
   mounted () {
     setTimeout(() => {
-      this.maskShow = false
+      this.$refs.scroll.scrollTo(0, this.homeScrollY)
     }, 50)
   },
   created () {
-    this.setMessageList(getMessageList())
     if (getUser()) {
       this.setIsLogin(true)
       if (this.firstStart) {
         getUserInfo(getUser())
         this.setFirstStart(false)
+        this.setMessageList(getMessageList().slice(0, 30))
       }
     } else {
       this.setIsLogin(false)
+      this.setMessageList(getMessageList())
     }
     this._getNewMessage()
   },
@@ -256,6 +278,7 @@ export default {
 </script>
 
 <style lang="stylus" rel="stylesheet/stylus" scoped>
+@import '~@/assets/stylus/transition'
 .index-scroll
   z-index 200
   .text
@@ -300,7 +323,7 @@ export default {
     margin: 0
     .text-wrapper
       margin: 0 auto
-      margin-top: 10px
+      margin-top: 7px
       padding: 5px 0
       color: #498ec2
       background-color: #d6eaf8
@@ -312,8 +335,4 @@ export default {
   width: 70%
 .success-enter-to, .success-leave
   width: 100%
-.fade-enter, .fade-leave-to
-  opacity: 0
-.fade-enter-active, .fade-leave-active
-  transition: all .2s linear;
 </style>

@@ -16,7 +16,7 @@ export default {
   data () {
     return {
       userName: '',
-      login: false
+      login: true
     }
   },
   computed: {
@@ -96,7 +96,7 @@ export default {
 <style lang="stylus" rel="stylesheet/stylus" scoped>
 .register-wrapper
   height 100vh
-  width 100%
+  width 100vw
   .register-input
     display flex
     align-items center

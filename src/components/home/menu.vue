@@ -1,7 +1,7 @@
 <template>
   <transition name="fade">
     <div class="menu-wrapper" v-show="menuVisible">
-      <transition name="slide-right">
+      <transition name="menu-slide-right">
         <div class="menu" v-if="menuVisible">
           <div class="user-info">
             <div class="avatar">
@@ -54,7 +54,7 @@ export default {
     position absolute
     left 0
     top 0
-    z-index 300
+    z-index 1000
     width 100%
     height 100%
     display flex

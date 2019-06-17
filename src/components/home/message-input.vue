@@ -9,6 +9,7 @@
       <cube-textarea class="message-input"
                      v-model="value"
                      indicator="indicator"
+                     :maxlength="255"
                      ref="textarea"></cube-textarea>
       <input class="slider"
              type="range"
@@ -190,7 +191,6 @@ export default {
       addMessage({
         author: getUser(),
         text: this.value.replace(/\n|\r\n/g, '<br/>'),
-        time: new Date().toLocaleString(),
         mood: this.$refs.slider.value,
         pic: this.pic.join('|')
       }).then((res) => {

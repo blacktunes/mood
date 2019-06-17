@@ -1,7 +1,7 @@
 <template>
   <div class="header">
     <span class="user-name" @click="nameClick">{{userName}}</span>
-    <span class="icon cubeic-more" @click="iconClick"></span>
+    <span class="icon cubeic-more" @click="iconClick" v-show="isLogin"></span>
   </div>
 </template>
 
@@ -19,9 +19,7 @@ export default {
   },
   methods: {
     iconClick () {
-      if (this.isLogin) {
-        this.$emit('icon-click')
-      }
+      this.$emit('icon-click')
     },
     nameClick () {
       if (this.isLogin) {

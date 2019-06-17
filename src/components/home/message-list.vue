@@ -1,12 +1,12 @@
 <template>
   <div class="message-wrapper" ref="message" @click="click">
-    <div class="message-title">
+    <div :class="titleCls">
       <div class="message-img">
         <img class="img" :src="item.img">
       </div>
       <div class="message-info">
         <div class="message-name">
-          <span>{{item.author}}</span>
+          <span style="font-weight:500">{{item.author}}</span>
         </div>
         <div class="message-time">
           <span>{{item.time}}</span>
@@ -14,7 +14,7 @@
       </div>
     </div>
     <div class="label" :style="labelColor"></div>
-    <div class="message-item">
+    <div :class="messageCls">
       <span class="message-text" v-html="item.text"></span>
     </div>
     <div class="mseeage-pic-wrapper">
@@ -22,7 +22,7 @@
         <img :class="picCls2" :src="pic.split('.' + pic.split('.').pop())[0] + '-less.jpg'" @load="loadImage" :data-large="pic" v-gallery="item.id" @click.stop>
       </div>
     </div>
-    <div class="message-btn">
+    <div class="message-btn" v-if="showBtn && !isReply">
       <span class="cubeic-message reply-btn"></span>
       <span class="reply-text">{{item.reply || 0}}</span>
     </div>
@@ -30,6 +30,7 @@
 </template>
 
 <script type="text/ecmascript-6">
+import { mapMutations } from 'vuex'
 import { colorArr } from '@/assets/js/color'
 
 export default {
@@ -37,11 +38,25 @@ export default {
     item: {
       type: Object,
       default: () => {}
+    },
+    showBtn: {
+      type: Boolean,
+      default: true
+    },
+    isReply: {
+      type: Boolean,
+      default: false
     }
   },
   computed: {
     labelColor () {
       return this.item.mood === 0 ? `border-color: transparent ${colorArr[0]} transparent transparent` : `border-color: transparent ${colorArr[this.item.mood]}`
+    },
+    titleCls () {
+      return this.isReply ? 'reply-title' : 'message-title'
+    },
+    messageCls () {
+      return this.isReply ? 'reply-item' : 'message-item'
     },
     picCls () {
       return this.item.pic.length === 1 ? '' : this.item.pic.length === 2 || this.item.pic.length === 4 ? 'message-pic2' : 'message-pic3'
@@ -51,15 +66,18 @@ export default {
     }
   },
   methods: {
+    ...mapMutations({
+      setMessageDetail: 'SET_MESSAGE_DETAIL'
+    }),
     click () {
-      console.log(this.item)
+      if (this.$route.path === '/detail') {
+        return
+      }
+      this.setMessageDetail(this.item)
       this.$router.push('/detail')
     },
     loadImage () {
       this.$emit('load-image')
-    },
-    imgClick (pic, index) {
-      this.$emit('img-click', pic, index)
     },
     // 下面三个方法为touch事件
     bgChange () {
@@ -84,40 +102,54 @@ export default {
 </script>
 
 <style lang="stylus" rel="stylesheet/stylus" scoped>
+title-class()
+.message-img
+  overflow hidden
+  flex 0 0 40px
+  height 40px
+  width 40px
+  border 1px solid #999
+  border-radius 50%
+  .img
+    height 100%
+.message-info
+  flex 1
+  margin-left 15px
+  .message-name
+    margin-bottom 5px
+    font-size 16px
+    font-weight bold
+  .message-time
+    margin-bottom 5px
+    font-size 10px
+    color #666
+
 .message-wrapper
   position relative
   width 100%
-  margin 10px auto
-  padding 10px 0 0 0
+  margin 1px auto
+  padding 5px 0 0 0
   background #fff
   transition background 0.2s linear
+  .reply-title
+    display flex
+    align-items center
+    margin 5px 10px
+    title-class()
   .message-title
     display flex
     align-items center
     margin 10px
-    .message-img
-      overflow hidden
-      flex 0 0 40px
-      height 40px
-      width 40px
-      border 1px solid #999
-      border-radius 50%
-      .img
-        height 100%
-    .message-info
-      flex 1
-      margin-left 15px
-      .message-name
-        margin-bottom 5px
-        font-size 16px
-        font-weight bold
-      .message-time
-        margin-bottom 5px
-        font-size 10px
-        color #666
+    title-class()
+  .reply-item
+    width 95%
+    margin -5px auto 10px 67px
+    .message-text
+      word-break break-all
+      font-size 14px
   .message-item
     width 95%
-    margin 5px auto
+    margin 5px auto 10px auto
     .message-text
       word-break break-all
       font-size 14px
@@ -150,7 +182,7 @@ export default {
     .pic1
       width 100%
       max-width 375px
-      margin 5px auto
+      margin auto
   .message-btn
     margin 10px auto 0 auto
     height 20px

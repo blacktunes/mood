@@ -3,10 +3,23 @@ import axios from 'axios'
 export const serverUrl = 'https://www.feizhouxianyu.cn:4001'
 // export const serverUrl = 'http://127.0.0.1:4000'
 
-export function messageList () {
+export function messageList (id) {
   return axios({
     method: 'get',
-    url: `${serverUrl}/messageList`
+    url: `${serverUrl}/messageList`,
+    params: {
+      id: id
+    }
+  })
+}
+
+export function moreMessageList (id) {
+  return axios({
+    method: 'get',
+    url: `${serverUrl}/moreMessageList`,
+    params: {
+      id: id
+    }
   })
 }
 
@@ -61,15 +74,13 @@ export function login (userName) {
   })
 }
 
-export function getNewMessage (id) {
+export function getNewMessage (id, lastId) {
   return axios({
-    method: 'post',
+    method: 'get',
     url: `${serverUrl}/getNewMessage`,
-    headers: {
-      'Content-type': 'application/x-www-form-urlencoded;charset=UTF-8'
-    },
     params: {
-      id: id
+      id: id,
+      lastId: lastId
     }
   })
 }
@@ -84,5 +95,24 @@ export function getUserInfo (userName) {
     params: {
       userName: userName
     }
+  })
+}
+
+export function addReply (reply) {
+  return axios({
+    method: 'post',
+    url: `${serverUrl}/addReply`,
+    headers: {
+      'Content-type': 'application/x-www-form-urlencoded;charset=UTF-8'
+    },
+    params: reply
+  })
+}
+
+export function getReply (id) {
+  return axios({
+    method: 'get',
+    url: `${serverUrl}/getReply`,
+    params: id
   })
 }

@@ -7,26 +7,30 @@ import gallery from 'img-vuer'
 
 /* eslint-disable */
 // HB打包返回键监听
-// var backnum = 1;
-// document.addEventListener('plusready',function(){
-//   plus.key.addEventListener("backbutton",function(e){
-//     if(backnum < 2){
-//       backnum++;
-//       plus.nativeUI.toast('<span>再按一次返回退出应用</span>', {
-//         type: 'richtext'
-//       })
-//       return false;
-//     }else{
-//       var _self = plus.webview.currentWebview();
-//       _self.close();
-//     }
-//   },false);
-// })
+var firstBack = null
+document.addEventListener('plusready',() => {
+  plus.key.addEventListener("backbutton",(e) => {
+    if (!firstBack) {
+      firstBack = new Date().getTime()
+      plus.nativeUI.toast('<span>再按一次返回退出应用</span>', {
+        type: 'richtext'
+      })
+      setTimeout(() => {
+        firstBack = null
+      }, 2000)
+    } else {
+      if (new Date().getTime() - firstBack < 1000) {
+        var _self = plus.webview.currentWebview()
+        _self.close()
+      }
+    }
+  },false)
+})
 /* eslint-enable */
 
 Vue.use(gallery, {
   swipeThreshold: 100,
-  isIndexShow: true,
+  isIndexShow: false,
   useCloseButton: false
 })
 
