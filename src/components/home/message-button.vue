@@ -1,15 +1,23 @@
 <template>
-  <div class="message-button">
-    <div class="icon-add" @click="click" v-if="!inputShow">
-      <i class="icon" :class="addCls"></i>
-    </div>
-
+  <transition name="btn-slide-down">
+  <div class="message-button" v-if="!inputShow">
+    <transition name="btn-scale">
+      <div class="icon-add" @click="click" v-if="isHome">
+        <i class="icon" :class="addCls"></i>
+      </div>
+    </transition>
   </div>
+  </transition>
 </template>
 
 <script type="text/ecmascript-6">
 import { mapState, mapMutations } from 'vuex'
 export default {
+  data () {
+    return {
+      isHome: true
+    }
+  },
   computed: {
     ...mapState([
       'inputShow',
@@ -40,9 +48,9 @@ export default {
   @import '~@/assets/stylus/transition'
   .icon-add
     z-index 500
-    position fixed
-    right 20px
-    bottom 20px
+    position absolute
+    left calc(100vw - 70px)
+    bottom 50px
     .icon
       font-size 50px
       color #666

@@ -12,7 +12,7 @@ import {
   // Loading,
   Tip,
   // Toolbar,
-  // TabBar,
+  TabBar,
   // TabPanels,
   // // form
   // Checkbox,
@@ -40,8 +40,8 @@ import {
   // Drawer,
   // ImagePreview,
   // scroll
-  Scroll
-  // Slide,
+  Scroll,
+  Slide
   // IndexList,
   // Swipe,
   // Sticky,
@@ -53,7 +53,7 @@ Vue.use(Button)
 // Vue.use(Loading)
 Vue.use(Tip)
 // Vue.use(Toolbar)
-// Vue.use(TabBar)
+Vue.use(TabBar)
 // Vue.use(TabPanels)
 // Vue.use(Checkbox)
 // Vue.use(CheckboxGroup)
@@ -79,7 +79,7 @@ Vue.use(Toast)
 // Vue.use(Drawer)
 // Vue.use(ImagePreview)
 Vue.use(Scroll)
-// Vue.use(Slide)
+Vue.use(Slide)
 // Vue.use(IndexList)
 // Vue.use(Swipe)
 // Vue.use(Sticky)

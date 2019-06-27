@@ -1,6 +1,6 @@
 <template>
   <transition name="fade">
-    <div class="menu-wrapper" v-show="menuVisible">
+    <div class="menu-wrapper" v-show="menuVisible" v-finger:swipe="swipeHandler">
       <transition name="menu-slide-right">
         <div class="menu" v-if="menuVisible">
           <div class="user-info">
@@ -32,6 +32,11 @@ export default {
     }
   },
   methods: {
+    swipeHandler (e) {
+      if (e.direction === 'Left') {
+        this.menuVisible = false
+      }
+    },
     menuShow () {
       this.menuVisible = !this.menuVisible
     },

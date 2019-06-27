@@ -1,7 +1,7 @@
 <template>
 <div>
   <transition name="fade">
-    <div class="message-input-wrapper" v-if="inputShow">
+    <div class="message-input-wrapper" v-if="inputShow" @touchmove.stop>
       <div class="mask" @click="bgClick"></div>
       <div class="mask2"></div>
       <span class="add-pic cubeic-picture" @click="addPic"></span>
@@ -34,8 +34,14 @@
   <div class="icon-add" v-if="inputShow">
     <i class="cubeic-right icon" @click="btnClick"></i>
   </div>
-  <div class="pic-upload" v-show="isAddPic">
-    <cube-upload class="upload" :max="9" :auto="false" :action="uploadAction" ref="upload" @files-added="filesAdded" @file-error="fileError" v-model="picFiles"></cube-upload>
+  <div class="pic-upload" v-show="isAddPic" @touchmove.stop>
+    <cube-upload class="upload"
+                 :max="9"
+                 :auto="false"
+                 :action="uploadAction"
+                 :multiple="true"
+                 ref="upload" @files-added="filesAdded" @file-error="fileError"
+                 v-model="picFiles" ></cube-upload>
     <cube-button class="upload-btn"  :outline="true" @click="picUpload">Submit</cube-button>
   </div>
 </div>
@@ -237,7 +243,7 @@ export default {
     position absolute
     bottom 0
     height 100%
-    width 100%
+    width 100vw
     .mask
       position absolute
       bottom 210px
@@ -251,14 +257,14 @@ export default {
       width 100%
       background rgba(222,222,222,0.9)
     .add-pic
-      position fixed
+      position absolute
       left 25px
       bottom 180px
       z-index 500
       font-size 24px
       color #666
     .pic-number
-      position fixed
+      position absolute
       left 48px
       bottom 192px
       z-index 500
@@ -271,7 +277,7 @@ export default {
       line-height 16px
       text-align center
     .message-input
-      position fixed
+      position absolute
       left 0
       right 0
       margin auto
@@ -283,8 +289,8 @@ export default {
         border 1.5px solid transparent
   .icon-add
     z-index 500
-    position fixed
-    right 20px
+    position absolute
+    left calc(100vw - 70px)
     bottom 20px
     .icon
       font-size 50px
@@ -318,7 +324,7 @@ export default {
     top: -5px
     background: #666
   .like-icon
-    position fixed
+    position absolute
     bottom 32px
     left 25px
     z-index 800
@@ -326,7 +332,7 @@ export default {
     color #000
   .icon-mask
     overflow hidden
-    position fixed
+    position absolute
     bottom 32px
     left 25px
     z-index 1000
@@ -341,7 +347,7 @@ export default {
       color #666
   .icon-mask2
     overflow hidden
-    position fixed
+    position absolute
     bottom 32px
     left 25px
     z-index 900
@@ -355,7 +361,7 @@ export default {
       font-size 24px
       color #fff
   .tip
-    position fixed
+    position absolute
     bottom 4px
     left 0px
     font-size 11px
@@ -363,10 +369,10 @@ export default {
     & >>> .cube-tip-close
       display none
   .pic-upload
-    position fixed
+    position absolute
     left 0
     top 0
-    width 100%
+    width 100vw
     height 100%
     background #ddd
     z-index 600

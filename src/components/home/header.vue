@@ -1,7 +1,7 @@
 <template>
   <div class="header">
     <span class="user-name" @click="nameClick">{{userName}}</span>
-    <span class="icon cubeic-more" @click="iconClick" v-show="isLogin"></span>
+    <span class="icon cubeic-more" @click="iconClick" v-show="iconShow"></span>
   </div>
 </template>
 
@@ -15,6 +15,9 @@ export default {
     ]),
     userName () {
       return this.isLogin ? getUser() : 'mood'
+    },
+    iconShow () {
+      return this.$route.name === 'index' && this.isLogin
     }
   },
   methods: {

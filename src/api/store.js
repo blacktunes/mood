@@ -116,3 +116,16 @@ export function getReply (id) {
     params: id
   })
 }
+
+export function getUserReply (userName) {
+  return axios({
+    method: 'post',
+    url: `${serverUrl}/getUserReply`,
+    headers: {
+      'Content-type': 'application/x-www-form-urlencoded;charset=UTF-8'
+    },
+    params: {
+      userName: userName
+    }
+  })
+}

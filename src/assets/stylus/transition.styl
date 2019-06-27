@@ -32,10 +32,33 @@
 .slide-up-enter-active, .slide-up-leave-active
   transition all .1s linear
 
-.fade-enter-active, .fade-leave-active, .menu-slide-right-enter-active, .menu-slide-right-leave-active
+.fade-enter-active, .fade-leave-active, .menu-slide-right-enter-active, .menu-slide-right-leave-active, .btn-slide-down-enter-active, .btn-slide-down-leave-active
   transition all .2s linear
 
 .slide-left-enter-active, .slide-left-leave-active, .slide-right-enter-active, .slide-right-leave-active
   transition all .2s linear
   position absolute
   will-change transform
+
+.btn-scale-enter, .btn-scale-leave-to
+  transform scale3d(0, 0, 0)
+
+.btn-scale-enter-to, .btn-scale-leave
+  transform scale3d(1, 1, 1)
+
+.btn-scale-enter-active, .btn-scale-leave-active
+  transition all .1s linear
+
+.btn-slide-down-leave-to
+  transform translate3d(0, 30px, 0)
+  opacity: 0
+
+.btn-slide-down-leave
+  transform translate3d(0, 0, 0)
+  opacity: 1
+
+.btn-slide-down-enter
+  transform translate3d(0, 60px, 0)
+
+.btn-slide-down-enter-to
+  transform translate3d(0, 30px, 0)

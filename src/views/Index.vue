@@ -1,59 +1,86 @@
 <template>
   <div class="index-wrapper">
-    <home-header @icon-click="iconClick"></home-header>
     <home-menu ref="menu"></home-menu>
-    <div :style="{height:indexHeight}">
-      <cube-scroll class="index-scroll"
-                   @pulling-down="onPullingDown"
-                   @pulling-up="onPullingUp"
-                   @scroll="scroll"
-                   @scroll-end="scrollEnd"
-                   :options="options"
-                   :data="messageList"
-                   :scroll-events="['scroll', 'scroll-end']"
-                   ref="scroll">
-        <transition-group name="fade">
-          <div v-for="item in messageList" :key="item.id">
-            <message-list :item="item"></message-list>
-          </div>
-        </transition-group>
-        <div class="text" v-show="listEmpty">暂无内容</div>
-        <template slot="pulldown" slot-scope="props">
-          <div v-if="props.pullDownRefresh"
-            class="cube-pulldown-wrapper"
-            :style="props.pullDownStyle">
-            <div v-if="props.beforePullDown"
-              class="before-trigger"
-              :style="{paddingBottom: props.bubbleY + 'px'}">
-              <span :class="{rotate: props.bubbleY > 0}">↓</span>
-            </div>
-            <div class="after-trigger" v-else>
-              <div v-show="props.isPullingDown" class="loading">
-                <cube-loading></cube-loading>
+    <cube-slide :loop="false"
+                :auto-play="false"
+                :showDots="false"
+                :threshold="0.4"
+                @scroll="sildeScroll"
+                @change="slideChange"
+                :options="slideOptions"
+                ref="slide"
+                class="slide">
+      <cube-slide-item>
+        <div :style="{height:indexHeight}" v-finger:swipe="swipeHandler">
+          <cube-scroll class="index-scroll"
+                      @pulling-down="onPullingDown"
+                      @pulling-up="onPullingUp"
+                      @scroll="scroll"
+                      @scroll-end="scrollEnd"
+                      :options="options"
+                      :data="messageList"
+                      :scroll-events="['scroll', 'scroll-end']"
+                      ref="scroll">
+            <transition-group name="fade">
+              <div v-for="item in messageList" :key="item.id">
+                <message-list :item="item"></message-list>
               </div>
-              <transition name="success">
-                <div v-show="!props.isPullingDown" class="text-wrapper">
-                  <span class="refresh-text">{{pullDownTxt}}</span>
+            </transition-group>
+            <div class="text" v-show="listEmpty">暂无内容</div>
+            <template slot="pulldown" slot-scope="props">
+              <div v-if="props.pullDownRefresh"
+                class="cube-pulldown-wrapper"
+                :style="props.pullDownStyle">
+                <div v-if="props.beforePullDown"
+                  class="before-trigger"
+                  :style="{paddingBottom: props.bubbleY + 'px'}">
+                  <span :class="{rotate: props.bubbleY > 0}">↓</span>
                 </div>
-              </transition>
+                <div class="after-trigger" v-else>
+                  <div v-show="props.isPullingDown" class="loading">
+                    <cube-loading></cube-loading>
+                  </div>
+                  <transition name="success">
+                    <div v-show="!props.isPullingDown" class="text-wrapper">
+                      <span class="refresh-text">{{pullDownTxt}}</span>
+                    </div>
+                  </transition>
+                </div>
+              </div>
+            </template>
+          </cube-scroll>
+          <message-input @success="onPullingDown"></message-input>
+          <transition name="fade">
+            <div class="new-message" v-show="showNewMessageTip">
+              <span class="cubeic-select"></span>
+              <span style="margin-left: 5px">查看新消息</span>
             </div>
-          </div>
-        </template>
-      </cube-scroll>
-      <message-button></message-button>
-      <message-input @success="onPullingDown"></message-input>
-      <transition name="fade">
-        <div class="new-message" v-show="showNewMessageTip">
-          <span class="cubeic-select"></span>
-          <span style="margin-left: 5px">查看新消息</span>
+          </transition>
         </div>
-      </transition>
-    </div>
+      </cube-slide-item>
+      <cube-slide-item>
+        <message ref="message"></message>
+      </cube-slide-item>
+    </cube-slide>
+    <message-button ref="button"></message-button>
+    <transition name="slide-up">
+    <cube-tab-bar v-model="selectedLabel"
+                  :data="tabs"
+                  :showSlider="true"
+                  @click="tabClick"
+                  @change="changeHandler"
+                  ref="tabBar"
+                  class="tab-bar"
+                  v-show="!inputShow"></cube-tab-bar>
+    </transition>
+    <transition name="fade">
+      <div class="mask" v-show="maskShow"></div>
+    </transition>
   </div>
 </template>
 
 <script type="text/ecmascript-6">
-import HomeHeader from '@/components/home/header'
+import Message from './message'
 import HomeMenu from '@/components/home/menu'
 import MessageList from '@/components/home/message-list'
 import MessageButton from '@/components/home/message-button'
@@ -68,13 +95,21 @@ export default {
       listLength: 0,
       haveNewMessage: false,
       showNewMessageTip: false,
-      menuVisible: false,
-      pic: [],
-      picShow: false
+      maskShow: true,
+      selectedLabel: 'Home',
+      tabs: [{
+        label: '',
+        icon: 'cubeic-home',
+        value: 'Home'
+      }, {
+        label: '',
+        icon: 'cubeic-email',
+        value: 'Message'
+      }]
     }
   },
   components: {
-    HomeHeader,
+    Message,
     HomeMenu,
     MessageList,
     MessageButton,
@@ -82,9 +117,10 @@ export default {
   },
   computed: {
     ...mapState([
+      'isLogin',
       'messageList',
       'firstStart',
-      'homeScrollY'
+      'inputShow'
     ]),
     messageId () {
       return !this.listEmpty ? this.messageList[0].id : 0
@@ -103,13 +139,24 @@ export default {
       return this.listLength === 0 ? '暂无新消息' : `已更新${this.listLength}条新消息`
     },
     indexHeight () {
-      return document.documentElement.clientHeight - 40 + 'px'
+      if (this.inputShow) {
+        return document.documentElement.clientHeight - 40 + 'px'
+      } else {
+        return document.documentElement.clientHeight - 70 + 'px'
+      }
+    },
+    slideOptions () {
+      return {
+        listenScroll: true,
+        probeType: 3,
+        flickLimitDistance: 10,
+        observeDOM: false
+      }
     },
     options () {
       return {
         pullDownRefresh: this.pullDownRefreshOptions,
-        pullUpLoad: this.pullUpLoadOptions,
-        probeType: 1
+        pullUpLoad: this.pullUpLoadOptions
       }
     },
     pullUpLoadOptions () {
@@ -137,9 +184,39 @@ export default {
     ...mapMutations({
       setIsLogin: 'SET_IS_LOGIN',
       setMessageList: 'SET_MESSAGE_LIST',
-      setFirstStart: 'SET_FIRST_START',
-      setHomeScrollY: 'SET_HOME_SCROLL_Y'
+      setFirstStart: 'SET_FIRST_START'
     }),
+    slideChange (index) {
+      if (index === 0) {
+        this.$refs.button.isHome = true
+        this.selectedLabel = 'Home'
+      } else {
+        this.$refs.button.isHome = false
+        this.selectedLabel = 'Message'
+        this.$refs.message._getUserReply()
+      }
+    },
+    sildeScroll (e) {
+      this.$refs.tabBar.setSliderTransform(-(e.x / 2))
+    },
+    tabClick (label) {
+      if (label === 'Home' && this.$refs.slide.currentPageIndex === 0) {
+        this.$refs.scroll.scrollTo(0, 0, 500)
+      }
+    },
+    changeHandler (label) {
+      switch (label) {
+        case 'Message': this.$refs.slide._goToPage(1)
+          break
+        case 'Home': this.$refs.slide._goToPage(0)
+          break
+      }
+    },
+    swipeHandler (e) {
+      if (e.direction === 'Right' && this.isLogin) {
+        this.iconClick()
+      }
+    },
     iconClick () {
       this.$refs.menu.menuShow()
     },
@@ -164,7 +241,6 @@ export default {
       if (this.haveNewMessage) {
         this.showNewMessageTip = true
       }
-      this.setHomeScrollY(e.y)
       if (e.y > 50) {
         this.$refs.scroll.scrollTo(0, 0, 500)
       }
@@ -190,18 +266,18 @@ export default {
                 this.$refs.scroll.disable()
                 this.setMessageList(res.data.messageList.concat(this.messageList))
                 saveMessageList(this.messageList)
+                this.haveNewMessage = false
                 setTimeout(() => {
                   this.$refs.scroll.enable()
                 }, 1450)
               }
             })
               .catch(() => {
-                const toast = this.$createToast({
+                this.$createToast({
                   txt: '网络异常',
                   time: 2000,
                   type: 'error'
-                })
-                toast.show()
+                }).show()
                 this.$refs.scroll.forceUpdate()
               })
           } else {
@@ -214,6 +290,14 @@ export default {
           }
         }
       })
+        .catch(() => {
+          this.$createToast({
+            txt: '网络异常',
+            time: 2000,
+            type: 'error'
+          }).show()
+          this.$refs.scroll.forceUpdate()
+        })
     },
     _getNewMessage () {
       if (this.listEmpty) {
@@ -249,10 +333,13 @@ export default {
       saveMessageList(tempList)
     }
   },
-  mounted () {
-    setTimeout(() => {
-      this.$refs.scroll.scrollTo(0, this.homeScrollY)
-    }, 50)
+  activated () {
+    this._getNewMessage()
+    if (getUser()) {
+      this.setIsLogin(true)
+    } else {
+      this.setIsLogin(false)
+    }
   },
   created () {
     if (getUser()) {
@@ -260,18 +347,21 @@ export default {
       if (this.firstStart) {
         getUserInfo(getUser())
         this.setFirstStart(false)
-        this.setMessageList(getMessageList().slice(0, 30))
       }
     } else {
       this.setIsLogin(false)
-      this.setMessageList(getMessageList())
     }
-    this._getNewMessage()
+    this.setMessageList(getMessageList().slice(0, 30))
+    setTimeout(() => {
+      this.maskShow = false
+    }, 200)
   },
-  beforeDestroy () {
+  deactivated () {
     if (this.timer || this.i) {
       clearTimeout(this.timer)
       clearTimeout(this.i)
+      this.timer = null
+      this.i = null
     }
   }
 }
@@ -279,6 +369,10 @@ export default {
 
 <style lang="stylus" rel="stylesheet/stylus" scoped>
 @import '~@/assets/stylus/transition'
+.slide
+  width 100vw
+  & >>> .cube-slide-group
+    white-space normal
 .index-scroll
   z-index 200
   .text
@@ -286,8 +380,8 @@ export default {
     margin-top 80px
 .new-message
   position absolute
-  top 60px
-  left 50%
+  top 20px
+  left 50vw
   padding 5px 10px
   transform translate(-50%, 0)
   font-size 12px
@@ -329,6 +423,9 @@ export default {
       background-color: #d6eaf8
     & >>> .cube-loading-spinners
       margin: auto
+.tab-bar
+  background #eee
+
 .success-enter-active, .success-leave-active
   transition: width .5s
 .success-enter, .success-leave-to

@@ -1,10 +1,6 @@
 <template>
   <div class="detail-wrapper">
-    <div class="header">
-      <span class="header-text">mood</span>
-      <span class="icon cubeic-back" @click="click"></span>
-    </div>
-    <div class="detail">
+    <div class="detail" v-finger:swipe="swipeHandler">
       <cube-scroll>
         <message-list :item="messageDetail"></message-list>
         <div class="reply">
@@ -18,6 +14,7 @@
                      :placeholder="placeholder"
                      v-model="value"
                      :maxlength="255"
+                     :disabled="!isLogin"
                      ref="textarea"
                      @focus="focus"
                      @blur="blur"></cube-textarea>
@@ -47,10 +44,16 @@ export default {
   },
   computed: {
     ...mapState([
+      'isLogin',
       'messageDetail'
     ])
   },
   methods: {
+    swipeHandler (e) {
+      if (e.direction === 'Right') {
+        this.click()
+      }
+    },
     click () {
       this.$router.go(-1)
     },
@@ -66,7 +69,8 @@ export default {
       addReply({
         id: this.messageDetail.id,
         text: this.value,
-        author: getUser()
+        author: getUser(),
+        messageAuthor: this.messageDetail.author
       }).then((res) => {
         if (res.status === 200) {
           this.$refs.textarea.blur()
@@ -82,7 +86,7 @@ export default {
       })
     }
   },
-  created () {
+  activated () {
     getReply({
       id: this.messageDetail.id
     }).then((res) => {

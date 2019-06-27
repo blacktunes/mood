@@ -1,16 +1,29 @@
 <template>
   <div id="app">
+    <home-header @icon-click="iconClick"></home-header>
     <transition :name="transitionName">
-    <router-view/>
+      <keep-alive>
+        <router-view ref="component"/>
+      </keep-alive>
     </transition>
   </div>
 </template>
 
 <script type="text/ecmascript-6">
+import HomeHeader from '@/components/home/header'
+
 export default {
+  components: {
+    HomeHeader
+  },
   data () {
     return {
       transitionName: ''
+    }
+  },
+  methods: {
+    iconClick () {
+      this.$refs.component.$refs.menu.menuShow()
     }
   },
   watch: {

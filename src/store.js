@@ -12,9 +12,7 @@ export default new Vuex.Store({
     messageList: [],
     // 是否首次启动
     firstStart: true,
-    messageDetail: {},
-    // 主页滚动位置
-    homeScrollY: 0
+    messageDetail: {}
   },
   mutations: {
     SET_INPUT_SHOW (state, flag) {
@@ -31,9 +29,6 @@ export default new Vuex.Store({
     },
     SET_MESSAGE_DETAIL (state, object) {
       state.messageDetail = object
-    },
-    SET_HOME_SCROLL_Y (state, number) {
-      state.homeScrollY = number
     }
   },
   getters: {

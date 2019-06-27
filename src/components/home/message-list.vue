@@ -19,7 +19,7 @@
     </div>
     <div class="mseeage-pic-wrapper">
       <div :class="picCls" v-for="(pic, index) in item.pic" :key="index">
-        <img :class="picCls2" :src="pic.split('.' + pic.split('.').pop())[0] + '-less.jpg'" @load="loadImage" :data-large="pic" v-gallery="item.id" @click.stop>
+        <img :class="picCls2" :src="pic.split('.' + pic.split('.').pop())[0] + '-less.jpg'" @load="loadImage" :data-large="pic" v-gallery="item.id" @click.stop v-img-lazy-load>
       </div>
     </div>
     <div class="message-btn" v-if="showBtn && !isReply">
@@ -116,7 +116,7 @@ title-class()
   flex 1
   margin-left 15px
   .message-name
-    margin-bottom 5px
+    margin 3px 0 5px 0
     font-size 16px
     font-weight bold
   .message-time
