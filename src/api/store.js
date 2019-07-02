@@ -129,3 +129,16 @@ export function getUserReply (userName) {
     }
   })
 }
+
+export function readReply (userName) {
+  return axios({
+    method: 'post',
+    url: `${serverUrl}/readReply`,
+    headers: {
+      'Content-type': 'application/x-www-form-urlencoded;charset=UTF-8'
+    },
+    params: {
+      userName: userName
+    }
+  })
+}

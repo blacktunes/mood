@@ -2,7 +2,7 @@
   <div class="message-wrapper">
     <cube-scroll>
     <div v-for="item in userReplyList" :key="item.id">
-      <div class="message">
+      <div class="message" @click.stop="messageClick(item)">
         <div class="message-title">
           <div class="message-img">
             <img class="img" :src="item.img">
@@ -19,10 +19,13 @@
         <div class="message-item">
           <span class="message-text" v-html="item.text"></span>
         </div>
+        <div class="reply-item" v-show="item.addressee">
+          <span class="message-text" v-html="item.addressee ? '回复 @' + item.addressee + ': ' + item.addresseeText : item.addresseeText"></span>
+        </div>
         <div class="source-wrapper">
           <div class="source-item">
             <div class="source-img">
-              <img class="img" :src="item.source.pic || item.source.img">
+              <img class="img" :src="item.source.pic ? item.source.pic[0].split('.' + item.source.pic[0].split('.').pop())[0] + '-less.jpg' : item.source.img">
             </div>
             <div class="source-info">
               <div class="source-name">
@@ -41,8 +44,9 @@
 </template>
 
 <script type="text/ecmascript-6">
-import { getUserReply } from '@/api/store'
+import { getUserReply, readReply } from '@/api/store'
 import { getUser } from '@/assets/js/localStorage'
+import { mapMutations } from 'vuex'
 
 export default {
   data () {
@@ -52,17 +56,39 @@ export default {
     }
   },
   methods: {
-    _getUserReply () {
+    ...mapMutations({
+      setMessageDetail: 'SET_MESSAGE_DETAIL'
+    }),
+    messageClick (item) {
+      this.setMessageDetail(item.source)
+      this.$router.push({
+        path: '/detail',
+        query: {
+          author: item.author,
+          text: item.text
+        }
+      })
+    },
+    _getUserReply (param) {
       getUserReply(getUser()).then((res) => {
         this.userReplyList = res.data.userReplyList.reverse()
-        this.haveNewReply = this.userReplyList.some(item => {
-          return item.haveRead === 0
-        })
+        if (param === 'slideChange' && this.haveNewReply) {
+          readReply(getUser())
+        } else {
+          this.haveNewReply = this.userReplyList.some(item => {
+            return (item.authorRead === 0 && item.source.author === getUser()) || (item.addresseeRead === 0 && item.addressee === getUser())
+          })
+          if (this.haveNewReply) {
+            this.$emit('new-reply', this.haveNewReply)
+          }
+        }
       })
+    },
+    _readReply () {
+      if (this.haveNewReply) {
+        readReply(getUser())
+      }
     }
-  },
-  created () {
-    this._getUserReply()
   }
 }
 </script>
@@ -100,13 +126,20 @@ export default {
           font-size 10px
           color #666
     .message-item
-      width 95%
-      margin 5px auto 10px auto
+      margin 5px
+      padding-left 5px
+      .message-text
+        word-break break-all
+        font-size 14px
+    .reply-item
+      margin 5px
+      padding 5px
+      background #eee
       .message-text
         word-break break-all
         font-size 14px
     .source-wrapper
-      margin 5px
+      margin 0 5px 5px 5px
       .source-item
         display flex
         width 100%

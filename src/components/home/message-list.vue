@@ -15,7 +15,7 @@
     </div>
     <div class="label" :style="labelColor"></div>
     <div :class="messageCls">
-      <span class="message-text" v-html="item.text"></span>
+      <span class="message-text" v-html="item.addressee ? '回复 @' + item.addressee + ': ' + item.text : item.text"></span>
     </div>
     <div class="mseeage-pic-wrapper">
       <div :class="picCls" v-for="(pic, index) in item.pic" :key="index">

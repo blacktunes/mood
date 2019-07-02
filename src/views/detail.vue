@@ -4,7 +4,7 @@
       <cube-scroll>
         <message-list :item="messageDetail"></message-list>
         <div class="reply">
-          <div v-for="item in replyList" :key="item.id">
+          <div v-for="item in replyList" :key="item.id" @click="replyClick(item)">
             <message-list :item="item" :isReply="true"></message-list>
           </div>
         </div>
@@ -30,6 +30,7 @@ import { mapState } from 'vuex'
 import messageList from '@/components/home/message-list'
 import { addReply, getReply } from '@/api/store'
 import { getUser } from '@/assets/js/localStorage'
+
 export default {
   components: {
     messageList
@@ -38,6 +39,8 @@ export default {
     return {
       value: '',
       placeholder: '请输入内容',
+      addressee: null,
+      addresseeText: null,
       btnShow: false,
       replyList: []
     }
@@ -49,6 +52,15 @@ export default {
     ])
   },
   methods: {
+    replyClick (item) {
+      if (this.value.length > 0) {
+        return
+      }
+      this.$refs.textarea.focus()
+      this.placeholder = '回复 @' + item.author + ':'
+      this.addressee = item.author
+      this.addresseeText = item.text
+    },
     swipeHandler (e) {
       if (e.direction === 'Right') {
         this.click()
@@ -63,37 +75,49 @@ export default {
     blur () {
       if (this.value.length < 1) {
         this.btnShow = false
+        this.placeholder = '请输入内容'
       }
     },
     btnClick () {
+      if (this.value.length < 1) {
+        return
+      }
       addReply({
         id: this.messageDetail.id,
         text: this.value,
         author: getUser(),
+        addressee: this.addressee,
+        addresseeText: this.addresseeText,
         messageAuthor: this.messageDetail.author
       }).then((res) => {
         if (res.status === 200) {
           this.$refs.textarea.blur()
-          this.replyList.push({
-            id: this.messageDetail.id,
-            text: this.value,
-            author: getUser(),
-            time: '刚刚',
-            img: 'https://www.feizhouxianyu.cn/mood/upload/' + getUser() + '.png'
-          })
+          this._getReply()
           this.value = ''
+          this.addressee = null
+        }
+      })
+    },
+    _getReply () {
+      getReply({
+        id: this.messageDetail.id
+      }).then((res) => {
+        if (res.status === 200) {
+          this.replyList = res.data.replyList.reverse()
         }
       })
     }
   },
   activated () {
-    getReply({
-      id: this.messageDetail.id
-    }).then((res) => {
-      if (res.status === 200) {
-        this.replyList = res.data.replyList
+    this._getReply()
+    setTimeout(() => {
+      if (this.$route.query.author) {
+        this.$refs.textarea.focus()
+        this.placeholder = '回复 @' + this.$route.query.author + ':'
+        this.addressee = this.$route.query.author
+        this.addresseeText = this.$route.query.text
       }
-    })
+    }, 350)
   }
 }
 </script>

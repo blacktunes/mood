@@ -59,7 +59,7 @@
         </div>
       </cube-slide-item>
       <cube-slide-item>
-        <message ref="message"></message>
+        <message ref="message" @new-reply="showNewReply"></message>
       </cube-slide-item>
     </cube-slide>
     <message-button ref="button"></message-button>
@@ -76,6 +76,7 @@
     <transition name="fade">
       <div class="mask" v-show="maskShow"></div>
     </transition>
+    <div class="new-reply" v-show="haveNewReply"></div>
   </div>
 </template>
 
@@ -96,6 +97,7 @@ export default {
       haveNewMessage: false,
       showNewMessageTip: false,
       maskShow: true,
+      haveNewReply: false,
       selectedLabel: 'Home',
       tabs: [{
         label: '',
@@ -186,6 +188,9 @@ export default {
       setMessageList: 'SET_MESSAGE_LIST',
       setFirstStart: 'SET_FIRST_START'
     }),
+    showNewReply (flag) {
+      this.haveNewReply = flag
+    },
     slideChange (index) {
       if (index === 0) {
         this.$refs.button.isHome = true
@@ -193,7 +198,8 @@ export default {
       } else {
         this.$refs.button.isHome = false
         this.selectedLabel = 'Message'
-        this.$refs.message._getUserReply()
+        this.$refs.message._getUserReply('slideChange')
+        this.haveNewReply = false
       }
     },
     sildeScroll (e) {
@@ -233,8 +239,6 @@ export default {
         if (e.y > 50) {
           this.$refs.scroll.scrollTo(0, 50)
         }
-      } else if (e.y === 0 || -1) {
-        this._getNewMessage()
       }
     },
     scrollEnd (e) {
@@ -308,6 +312,7 @@ export default {
         }
         this.timer = setTimeout(() => {
           this.timer = null
+          this._getNewMessage()
         }, 1000 * 30)
         getNewMessage(this.messageId, this.lastId).then(res => {
           if (res.status === 200) {
@@ -318,6 +323,7 @@ export default {
             }
           }
         })
+        this.$refs.message._getUserReply()
       }
     },
     _updataReply (res) {
@@ -397,6 +403,14 @@ export default {
   width 100vw
   height 100vh
   background #ccc
+.new-reply
+  position absolute
+  bottom 20px
+  right 21%
+  width 7px
+  height 7px
+  border-radius 50%
+  background red
 
 .cube-pulldown-wrapper
   text-align: center
