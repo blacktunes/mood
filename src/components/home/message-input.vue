@@ -1,6 +1,6 @@
 <template>
 <div>
-  <transition name="fade">
+  <transition name="inpit-slide-up">
     <div class="message-input-wrapper" v-if="inputShow" @touchmove.stop>
       <div class="mask" @click="bgClick"></div>
       <div class="mask2"></div>
@@ -40,9 +40,12 @@
                  :auto="false"
                  :action="uploadAction"
                  :multiple="true"
-                 ref="upload" @files-added="filesAdded" @file-error="fileError"
-                 v-model="picFiles" ></cube-upload>
-    <cube-button class="upload-btn"  :outline="true" @click="picUpload">Submit</cube-button>
+                 ref="upload"
+                 @files-added="filesAdded"
+                 @file-error="fileError"
+                 v-model="picFiles"></cube-upload>
+    <cube-button class="upload-btn" :outline="true" @click="getCamera">Camera</cube-button>
+    <cube-button class="upload-btn" :outline="true" @click="picUpload">Submit</cube-button>
   </div>
 </div>
 </template>
@@ -104,6 +107,35 @@ export default {
       setInputShow: 'SET_INPUT_SHOW',
       setMessageList: 'SET_MESSAGE_LIST'
     }),
+    getCamera () {
+      /* eslint-disable */
+      const camera = plus.camera.getCamera()
+      camera.captureImage((filePath) => {
+        plus.io.resolveLocalFileSystemURL(filePath, (entry) => {
+          let reader = null
+          entry.file((file) => {
+            reader = new plus.io.FileReader()
+            reader.readAsDataURL(file)
+            reader.onloadend = (e) => {
+              let arr = e.target.result.split(',')
+              let mime = arr[0].match(/:(.*?);/)[1]
+              let suffix = mime.split('/')[1]
+              let bstr = atob(arr[1])
+              let n = bstr.length
+              let u8arr = new Uint8Array(n)
+              while (n--) {
+                u8arr[n] = bstr.charCodeAt(n)
+              }
+              const img = new File([u8arr], file.name, {
+                type: mime
+              })
+              this.$refs.upload.addFiles([img])
+            }
+          })
+        })
+      })
+      /* eslint-enable */
+    },
     filesAdded (files) {
       // 上传文件校验
       // const file = files[0]
@@ -255,6 +287,7 @@ export default {
       bottom 0
       height 210px
       width 100%
+      border-radius 15px 15px 0 0
       background rgba(222,222,222,0.9)
     .add-pic
       position absolute
@@ -287,6 +320,7 @@ export default {
       box-shadow 0 0 1px 2px #ddd
       & >>> .cube-textarea
         border 1.5px solid transparent
+        border-radius 5px
   .icon-add
     z-index 500
     position absolute
@@ -398,5 +432,5 @@ export default {
       height 30vw
   .upload-btn
     width 95%
-    margin auto
+    margin 10px auto
 </style>

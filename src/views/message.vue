@@ -1,43 +1,48 @@
 <template>
   <div class="message-wrapper">
     <cube-scroll>
-    <div v-for="item in userReplyList" :key="item.id">
-      <div class="message" @click.stop="messageClick(item)">
-        <div class="message-title">
-          <div class="message-img">
-            <img class="img" :src="item.img">
-          </div>
-          <div class="message-info">
-            <div class="message-name">
-              <span style="font-weight:500">{{item.author}}</span>
+    <transition-group name="fade">
+      <div v-for="item in userReplyList" :key="item.id">
+        <div class="message" @click.stop="messageClick(item)">
+          <div class="message-title">
+            <div class="message-img">
+              <img class="img" :src="item.img">
             </div>
-            <div class="message-time">
-              <span>{{item.time}}</span>
-            </div>
-          </div>
-        </div>
-        <div class="message-item">
-          <span class="message-text" v-html="item.text"></span>
-        </div>
-        <div class="reply-item" v-show="item.addressee">
-          <span class="message-text" v-html="item.addressee ? '回复 @' + item.addressee + ': ' + item.addresseeText : item.addresseeText"></span>
-        </div>
-        <div class="source-wrapper">
-          <div class="source-item">
-            <div class="source-img">
-              <img class="img" :src="item.source.pic ? item.source.pic[0].split('.' + item.source.pic[0].split('.').pop())[0] + '-less.jpg' : item.source.img">
-            </div>
-            <div class="source-info">
-              <div class="source-name">
-                <span style="font-weight:500">@{{item.source.author}}</span>
+            <div class="message-info">
+              <div class="message-name">
+                <span style="font-weight:500">{{item.author}}</span>
               </div>
-              <div class="source-text">
-                <span v-html="item.source.text.length > 1 ? item.source.text : '[图片]'"></span>
+              <div class="message-time">
+                <span>{{item.time}}</span>
+              </div>
+            </div>
+          </div>
+          <div class="message-item">
+            <span class="message-text" v-html="item.text"></span>
+          </div>
+          <div class="reply-item" v-show="item.addressee">
+            <span class="message-text" v-html="item.addressee ? '回复 @' + item.addressee + ': ' + item.addresseeText : item.addresseeText"></span>
+          </div>
+          <div class="source-wrapper">
+            <div class="source-item">
+              <div class="source-img">
+                <img class="img" :src="item.source.pic ? item.source.pic[0].split('.' + item.source.pic[0].split('.').pop())[0] + '-less.jpg' : item.source.img">
+              </div>
+              <div class="source-info">
+                <div class="source-name">
+                  <span style="font-weight:500">@{{item.source.author}}</span>
+                </div>
+                <div class="source-text">
+                  <span v-html="item.source.text.length > 0 ? item.source.text : '[图片]'"></span>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
+    </transition-group>
+    <div class="loading" v-show="loadingShow">
+      <cube-loading></cube-loading>
     </div>
     </cube-scroll>
   </div>
@@ -46,13 +51,25 @@
 <script type="text/ecmascript-6">
 import { getUserReply, readReply } from '@/api/store'
 import { getUser } from '@/assets/js/localStorage'
-import { mapMutations } from 'vuex'
+import { mapMutations, mapState } from 'vuex'
 
 export default {
   data () {
     return {
       userReplyList: [],
       haveNewReply: false
+    }
+  },
+  computed: {
+    ...mapState([
+      'isLogin'
+    ]),
+    loadingShow () {
+      if (this.userReplyList.length < 1) {
+        return true
+      } else {
+        return false
+      }
     }
   },
   methods: {
@@ -70,6 +87,9 @@ export default {
       })
     },
     _getUserReply (param) {
+      if (!this.isLogin) {
+        return
+      }
       getUserReply(getUser()).then((res) => {
         this.userReplyList = res.data.userReplyList.reverse()
         if (param === 'slideChange' && this.haveNewReply) {
@@ -96,6 +116,12 @@ export default {
 <style lang="stylus" rel="stylesheet/stylus" scoped>
 .message-wrapper
   height calc(100vh - 70px)
+  .loading
+    width 24px
+    position relative
+    left 50%
+    transform translate(-50%, 0)
+    margin-top 30px
   .message
     width 100%
     margin 1px auto

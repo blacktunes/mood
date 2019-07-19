@@ -1,18 +1,14 @@
-.fade-enter, .fade-leave-to {
+.fade-enter, .fade-leave-to
   opacity: 0
-}
 
-.fade-enter-to, .fade-leave {
+.fade-enter-to, .fade-leave
   opacity: 1
-}
 
-.menu-slide-right-enter, .menu-slide-right-leave-to {
+.menu-slide-right-enter, .menu-slide-right-leave-to
   transform: translate3d(-100%, 0, 0)
-}
 
-.menu-slide-right-enter-to, .menu-slide-right-leave {
+.menu-slide-right-enter-to, .menu-slide-right-leave
   transform: translate3d(0, 0, 0)
-}
 
 .slide-left-enter, .slide-right-leave-to 
   transform translate3d(100%, 0, 0)
@@ -32,7 +28,19 @@
 .slide-up-enter-active, .slide-up-leave-active
   transition all .1s linear
 
-.fade-enter-active, .fade-leave-active, .menu-slide-right-enter-active, .menu-slide-right-leave-active, .btn-slide-down-enter-active, .btn-slide-down-leave-active
+.inpit-slide-up-enter, .inpit-slide-up-leave-to
+  transform translate3d(0, 100%, 0)
+
+.inpit-slide-up-enter-to, .inpit-slide-up-leave
+  transform translate3d(0, 0, 0)
+
+.inpit-slide-up-enter-active
+  transition all .2s ease
+
+.inpit-slide-up-leave-active
+  transition all .4s cubic-bezier(1, 0, 1, 0)
+
+.fade-enter-active, .fade-leave-active, .menu-slide-right-enter-active, .menu-slide-right-leave-active
   transition all .2s linear
 
 .slide-left-enter-active, .slide-left-leave-active, .slide-right-enter-active, .slide-right-leave-active
@@ -49,16 +57,11 @@
 .btn-scale-enter-active, .btn-scale-leave-active
   transition all .1s linear
 
-.btn-slide-down-leave-to
-  transform translate3d(0, 30px, 0)
-  opacity: 0
-
-.btn-slide-down-leave
-  transform translate3d(0, 0, 0)
-  opacity: 1
-
-.btn-slide-down-enter
+.btn-slier-up-enter
   transform translate3d(0, 60px, 0)
 
-.btn-slide-down-enter-to
+.btn-slier-up-enter-to
   transform translate3d(0, 30px, 0)
+
+.btn-slier-up-enter-active
+  transition all .1s linear

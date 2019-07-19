@@ -1,5 +1,5 @@
 module.exports = {
-  baseUrl: process.env.NODE_ENV === 'production'
+  publicPath: process.env.NODE_ENV === 'production'
     ? './'
     : '/',
   css: {
@@ -15,5 +15,12 @@ module.exports = {
       postCompile: false,
       theme: false
     }
-  }
+  },
+  configureWebpack: {
+    // 关闭 webpack 的性能提示
+    performance: {
+      hints: false
+    }
+  },
+  productionSourceMap: false
 }

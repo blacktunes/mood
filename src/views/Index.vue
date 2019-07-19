@@ -4,14 +4,15 @@
     <cube-slide :loop="false"
                 :auto-play="false"
                 :showDots="false"
-                :threshold="0.4"
+                :threshold="0.3"
                 @scroll="sildeScroll"
                 @change="slideChange"
                 :options="slideOptions"
+                :refreshResetCurrent="false"
                 ref="slide"
                 class="slide">
       <cube-slide-item>
-        <div :style="{height:indexHeight}" v-finger:swipe="swipeHandler">
+        <div :style="{height:indexHeight, transition:transition}" v-finger:swipe="swipeHandler">
           <cube-scroll class="index-scroll"
                       @pulling-down="onPullingDown"
                       @pulling-up="onPullingUp"
@@ -58,7 +59,7 @@
           </transition>
         </div>
       </cube-slide-item>
-      <cube-slide-item>
+      <cube-slide-item v-if="isLogin">
         <message ref="message" @new-reply="showNewReply"></message>
       </cube-slide-item>
     </cube-slide>
@@ -88,7 +89,7 @@ import MessageButton from '@/components/home/message-button'
 import MessageInput from '@/components/home/message-input'
 import { getMessageList, saveMessageList, getUser } from '@/assets/js/localStorage'
 import { mapMutations, mapState } from 'vuex'
-import { messageList, getNewMessage, getUserInfo, moreMessageList } from '@/api/store'
+import { messageList, getNewMessage, moreMessageList } from '@/api/store'
 
 export default {
   data () {
@@ -98,16 +99,17 @@ export default {
       showNewMessageTip: false,
       maskShow: true,
       haveNewReply: false,
-      selectedLabel: 'Home',
-      tabs: [{
-        label: '',
-        icon: 'cubeic-home',
-        value: 'Home'
-      }, {
-        label: '',
-        icon: 'cubeic-email',
-        value: 'Message'
-      }]
+      selectedLabel: 'Home'
+    }
+  },
+  sockets: {
+    // 建立连接自动调用connect
+    connect: () => {
+      // 与socket.io连接后回调
+      // console.log('conn')
+    },
+    disconnect: () => {
+      // console.log('disconn')
     }
   },
   components: {
@@ -121,9 +123,27 @@ export default {
     ...mapState([
       'isLogin',
       'messageList',
-      'firstStart',
       'inputShow'
     ]),
+    tabs () {
+      if (this.isLogin) {
+        return [{
+          label: '',
+          icon: 'cubeic-home',
+          value: 'Home'
+        }, {
+          label: '',
+          icon: 'cubeic-email',
+          value: 'Message'
+        }]
+      } else {
+        return [{
+          label: '',
+          icon: 'cubeic-home',
+          value: 'Home'
+        }]
+      }
+    },
     messageId () {
       return !this.listEmpty ? this.messageList[0].id : 0
     },
@@ -140,6 +160,13 @@ export default {
     pullDownTxt () {
       return this.listLength === 0 ? '暂无新消息' : `已更新${this.listLength}条新消息`
     },
+    transition () {
+      if (this.inputShow) {
+        return 'height 0.15s linear'
+      } else {
+        return ''
+      }
+    },
     indexHeight () {
       if (this.inputShow) {
         return document.documentElement.clientHeight - 40 + 'px'
@@ -151,7 +178,7 @@ export default {
       return {
         listenScroll: true,
         probeType: 3,
-        flickLimitDistance: 10,
+        flickLimitDistance: 1,
         observeDOM: false
       }
     },
@@ -185,8 +212,7 @@ export default {
   methods: {
     ...mapMutations({
       setIsLogin: 'SET_IS_LOGIN',
-      setMessageList: 'SET_MESSAGE_LIST',
-      setFirstStart: 'SET_FIRST_START'
+      setMessageList: 'SET_MESSAGE_LIST'
     }),
     showNewReply (flag) {
       this.haveNewReply = flag
@@ -323,7 +349,9 @@ export default {
             }
           }
         })
-        this.$refs.message._getUserReply()
+        if (this.isLogin) {
+          this.$refs.message._getUserReply()
+        }
       }
     },
     _updataReply (res) {
@@ -346,14 +374,14 @@ export default {
     } else {
       this.setIsLogin(false)
     }
+    setTimeout(() => {
+      this.$refs.slide.refresh()
+    }, 20)
   },
   created () {
+    this.$socket.emit('login', getUser())
     if (getUser()) {
       this.setIsLogin(true)
-      if (this.firstStart) {
-        getUserInfo(getUser())
-        this.setFirstStart(false)
-      }
     } else {
       this.setIsLogin(false)
     }
@@ -437,8 +465,13 @@ export default {
       background-color: #d6eaf8
     & >>> .cube-loading-spinners
       margin: auto
+
 .tab-bar
   background #eee
+  & >>> .cube-tab-bar-slider
+    background #01579b
+  & >>> .cube-tab_active
+    color #01579b
 
 .success-enter-active, .success-leave-active
   transition: width .5s

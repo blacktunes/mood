@@ -19,7 +19,7 @@
     </div>
     <div class="mseeage-pic-wrapper">
       <div :class="picCls" v-for="(pic, index) in item.pic" :key="index">
-        <img :class="picCls2" :src="pic.split('.' + pic.split('.').pop())[0] + '-less.jpg'" @load="loadImage" :data-large="pic" v-gallery="item.id" @click.stop v-img-lazy-load>
+        <img :class="picCls2" v-lazy="pic.split('.' + pic.split('.').pop())[0] + '-less.jpg'" @click="handleImgsClick(index, item.pic)" @click.stop>
       </div>
     </div>
     <div class="message-btn" v-if="showBtn && !isReply">
@@ -34,6 +34,11 @@ import { mapMutations } from 'vuex'
 import { colorArr } from '@/assets/js/color'
 
 export default {
+  data () {
+    return {
+      initialIndex: 0
+    }
+  },
   props: {
     item: {
       type: Object,
@@ -49,6 +54,9 @@ export default {
     }
   },
   computed: {
+    isDetail () {
+      return this.$route.path === '/detail'
+    },
     labelColor () {
       return this.item.mood === 0 ? `border-color: transparent ${colorArr[0]} transparent transparent` : `border-color: transparent ${colorArr[this.item.mood]}`
     },
@@ -69,6 +77,24 @@ export default {
     ...mapMutations({
       setMessageDetail: 'SET_MESSAGE_DETAIL'
     }),
+    handleImgsClick (index, pic) {
+      this.initialIndex = index
+      const params = {
+        $props: {
+          imgs: pic,
+          initialIndex: 'initialIndex', // 响应式数据的key名
+          loop: false,
+          zIndex: 1000
+        },
+        $events: {
+          change: (i) => {
+            // 必须更新 initialIndex
+            this.initialIndex = i
+          }
+        }
+      }
+      this.$createImagePreview({ ...params }).show()
+    },
     click () {
       if (this.$route.path === '/detail') {
         return

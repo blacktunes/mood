@@ -9,7 +9,7 @@ import {
   createAPI,
   // basic
   Button,
-  // Loading,
+  Loading,
   Tip,
   // Toolbar,
   TabBar,
@@ -38,7 +38,7 @@ import {
   // Dialog,
   // ActionSheet,
   // Drawer,
-  // ImagePreview,
+  ImagePreview,
   // scroll
   Scroll,
   Slide
@@ -50,7 +50,7 @@ import {
 } from 'cube-ui'
 
 Vue.use(Button)
-// Vue.use(Loading)
+Vue.use(Loading)
 Vue.use(Tip)
 // Vue.use(Toolbar)
 Vue.use(TabBar)
@@ -77,7 +77,7 @@ Vue.use(Toast)
 // Vue.use(Dialog)
 // Vue.use(ActionSheet)
 // Vue.use(Drawer)
-// Vue.use(ImagePreview)
+Vue.use(ImagePreview)
 Vue.use(Scroll)
 Vue.use(Slide)
 // Vue.use(IndexList)

@@ -1,9 +1,11 @@
 <template>
   <div class="register-wrapper">
     <div class="register-input">
-      <span class="text">{{text}}</span>
-      <input class="input" v-model="userName">
-      <i class="cubeic-pullup icon" @click="click"></i>
+      <form>
+        <input class="username-input" v-model="userName" placeholder="用户名">
+        <input class="password-input" v-model="userName" type="password" placeholder="暂时无需密码" autocomplete="on" readonly="true">
+        <cube-button class="register-button" :outline="true" @click="click">{{text}}</cube-button>
+      </form>
     </div>
     <cube-button class="button" :outline="true" :inline="true" @click="buttonClick">{{button}}</cube-button>
   </div>
@@ -28,6 +30,10 @@ export default {
     }
   },
   methods: {
+    goBack () {
+      this.$router.push('/')
+      this.$router.go(0)
+    },
     click () {
       if (this.userName) {
         const toast3 = this.$createToast({
@@ -60,7 +66,7 @@ export default {
               return
             }
             saveUser(this.userName)
-            this.$router.push('/')
+            this.goBack()
           })
         } else {
           register(this.userName).then((res) => {
@@ -78,11 +84,11 @@ export default {
               return
             }
             saveUser(this.userName)
-            this.$router.push('/')
+            this.goBack()
           })
         }
       } else {
-        this.$router.go(-1)
+        this.$router.push('/')
       }
     },
     buttonClick () {
@@ -107,17 +113,27 @@ export default {
     top 30%
     width 60%
     margin auto
-    .text
-      margin-bottom 10px
-    .input
-      text-align center
-      height 30px
-      border-radius 5px
+    .username-input
+      padding 0 15px
+      height 35px
+      width 90%
+      border-radius 5px 5px 0 0
       color #666
-      font-size 15px
-    .icon
+      font-size 12px
+      border-bottom 1px solid #ccc
+      outline none
+    .password-input
+      padding 0 15px
+      height 35px
+      width 90%
+      border-radius 0 0 5px 5px
+      color #666
+      font-size 12px
+      outline none
+    .register-button
+      width calc(90% + 30px)
+      padding 10px 0
       margin-top 5px
-      font-size 30px
   .button
     position absolute
     bottom 20px

@@ -99,7 +99,9 @@ export default {
     },
     logOff () {
       delUser()
+      this.$socket.disconnect()
       this.$router.push('/')
+      this.$router.go(0)
     }
   }
 }

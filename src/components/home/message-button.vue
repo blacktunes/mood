@@ -1,5 +1,5 @@
 <template>
-  <transition name="btn-slide-down">
+  <transition name="btn-slier-up">
   <div class="message-button" v-if="!inputShow">
     <transition name="btn-scale">
       <div class="icon-add" @click="click" v-if="isHome">

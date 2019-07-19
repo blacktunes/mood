@@ -5,15 +5,30 @@
         <div class="menu" v-if="menuVisible">
           <div class="user-info">
             <div class="avatar">
-              <img class="img" :src="avatar">
+              <cube-upload class="upload"
+                           :action="uploadAction"
+                           :simultaneous-uploads="1"
+                           @files-added="filesAdded"
+                           v-model="files"
+                           ref="upload">
+                <div class="clear-fix">
+                  <cube-upload-file v-for="(file, i) in files" :file="file" :key="i"></cube-upload-file>
+                  <cube-upload-btn :multiple="false">
+                    <div>
+                      <img class="upload-img" :src="avatar">
+                    </div>
+                  </cube-upload-btn>
+                </div>
+              </cube-upload>
             </div>
             <div class="username">{{username}}</div>
           </div>
           <div class="menu-list">
-            <a class="menu-btn">
-              <span class="cubeic-delete" @click="cleanMessage">清除消息缓存</span>
-            </a>
+            <div class="menu-btn" @click="cleanMessage">
+              <span class="cubeic-delete">清除消息缓存</span>
+            </div>
           </div>
+          <cube-button class="logoff-btn" icon="cubeic-close" :outline="true" :inline="true" @click="logOff">注销</cube-button>
         </div>
       </transition>
       <div class="mask" @click="menuShow"></div>
@@ -22,16 +37,37 @@
 </template>
 
 <script type="text/ecmascript-6">
-import { getUser, delMessageList } from '@/assets/js/localStorage'
+import { getUser, delMessageList, delUser } from '@/assets/js/localStorage'
+import { serverUrl } from '@/api/store'
 
 export default {
   data () {
     return {
       menuVisible: false,
-      username: getUser()
+      username: '',
+      uploadAction: {
+        target: `${serverUrl}/upload`,
+        fileName: 'avatar',
+        data: {
+          username: getUser()
+        }
+      },
+      files: []
     }
   },
   methods: {
+    filesAdded (files) {
+      const file = files[0]
+      if (file.size > 600 * 1024) {
+        file.ignore = true
+        this.$createToast({
+          type: 'warn',
+          time: 1000,
+          txt: 'You selected > 600k files'
+        }).show()
+      }
+      file && this.$refs.upload.removeFile(file)
+    },
     swipeHandler (e) {
       if (e.direction === 'Left') {
         this.menuVisible = false
@@ -43,12 +79,21 @@ export default {
     cleanMessage () {
       delMessageList()
       this.$router.go(0)
+    },
+    logOff () {
+      delUser()
+      this.$socket.disconnect()
+      this.$router.push('/')
+      this.$router.go(0)
     }
   },
   computed: {
     avatar () {
       return 'https://www.feizhouxianyu.cn/mood/upload/' + this.username + '.png'
     }
+  },
+  activated () {
+    this.username = getUser()
   }
 }
 </script>
@@ -65,9 +110,15 @@ export default {
     display flex
     background rgba(0, 0, 0, 0.3)
     .menu
+      position relative
       flex 0 0 60%
       width 60%
       background #fff
+      .logoff-btn
+        position absolute
+        bottom 10px
+        left 50%
+        transform translate(-50%, 0)
       .user-info
         padding 20px 0
         background #eee
@@ -78,18 +129,41 @@ export default {
           margin 0 auto 20px auto
           border 1px solid #999
           border-radius 50%
-          .img
+          .upload-img
             width 100%
         .username
           text-align center
       .menu-list
-        margin 20px 0
+        margin 2px
         text-align center
         .menu-btn
           font-size 14px
           color #000
-          &:active
-           color #666
+          padding 15px 0
+          width 100%
+          position: relative;
+          //隐藏溢出的径向渐变背景
+          overflow: hidden;
+          &:after
+            content: "";
+            display: block;
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            transform: scale(0, 0);
+            opacity: .3;
+            //设置初始状态
+            transition: 0s;
+          &:active:after
+            pointer-events: none;
+            //设置径向渐变
+            background-image: radial-gradient(circle, #bbb 10%, transparent 10.01%);
+            background-repeat: no-repeat;
+            background-position: 50%;
+            transform: scale(10, 10);
+            transition: transform .3s, opacity .5s;
     .mask
       flex 0 0 40%
       width 40%

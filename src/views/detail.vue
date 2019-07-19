@@ -4,9 +4,18 @@
       <cube-scroll>
         <message-list :item="messageDetail"></message-list>
         <div class="reply">
-          <div v-for="item in replyList" :key="item.id" @click="replyClick(item)">
-            <message-list :item="item" :isReply="true"></message-list>
+          <div class="no-reply" v-if="noReply">
+            <div class="no-reply-text">并没有回复</div>
+            <cube-button class="no-reply-btn" :inline="true" :outline="true" @click="_getReply">刷新试试</cube-button>
           </div>
+          <transition-group name="fade">
+            <div v-for="item in replyList" :key="item.id" @click="replyClick(item)">
+              <message-list :item="item" :isReply="true"></message-list>
+            </div>
+          </transition-group>
+        </div>
+        <div class="loading" v-show="loadingShow">
+          <cube-loading></cube-loading>
         </div>
       </cube-scroll>
       <cube-textarea class="reply-input"
@@ -42,14 +51,24 @@ export default {
       addressee: null,
       addresseeText: null,
       btnShow: false,
-      replyList: []
+      replyList: [],
+      loadingShow: false
     }
   },
   computed: {
     ...mapState([
       'isLogin',
       'messageDetail'
-    ])
+    ]),
+    noReply () {
+      if (this.replyList.length > 0) {
+        return false
+      } else if (this.loadingShow) {
+        return false
+      } else {
+        return true
+      }
+    }
   },
   methods: {
     replyClick (item) {
@@ -99,10 +118,14 @@ export default {
       })
     },
     _getReply () {
+      if (this.replyList.length < 1) {
+        this.loadingShow = true
+      }
       getReply({
         id: this.messageDetail.id
       }).then((res) => {
         if (res.status === 200) {
+          this.loadingShow = false
           this.replyList = res.data.replyList.reverse()
         }
       })
@@ -127,27 +150,22 @@ export default {
   .detail-wrapper
     width 100vw
     height 100vh
-    .header
-      position relative
-      z-index 500
-      display flex
-      height 40px
-      text-align center
-      background #fff
-      box-shadow 0px 1px 1px #bbb
-      .header-text
-        margin auto
-        font-size 20px
-      .icon
-        position fixed
-        top 10px
-        left 5px
-        color #666
     .detail
       width 100vw
       height calc(100vh - 80px)
       .reply
         margin 5px
+        .no-reply
+          text-align center
+          margin 50px auto 0 auto
+          .no-reply-btn
+            margin-top 7px
+      .loading
+        width 24px
+        position relative
+        left 50%
+        transform translate(-50%, 0)
+        margin-top 55px
       .reply-input
         z-index 500
         position fixed

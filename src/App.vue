@@ -12,6 +12,11 @@
 <script type="text/ecmascript-6">
 import HomeHeader from '@/components/home/header'
 
+// 禁止鼠标右击事件
+window.addEventListener('contextmenu', (e) => {
+  e.preventDefault()
+})
+
 export default {
   components: {
     HomeHeader

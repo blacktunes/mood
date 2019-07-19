@@ -3,17 +3,31 @@ import './cube-ui'
 import App from './App.vue'
 import router from './router'
 import store from './store'
-import gallery from 'img-vuer'
 import AlloyFinger from 'alloyfinger'
 import AlloyFingerPlugin from 'alloyfinger/vue/alloy_finger_vue'
-import VueImgLazyLoad from 'vue-images-lazy-load'
+import VueLazyload from 'vue-lazyload'
+import VueSocketIO from 'vue-socket.io'
+import 'default-passive-events'
+// import VConsole from 'vconsole'
+
+import { serverUrl } from '@/api/store'
+
+// eslint-disable-next-line
+// new VConsole()
+
+Vue.use(new VueSocketIO({
+  debug: false,
+  connection: serverUrl
+}))
 
 Vue.use(AlloyFingerPlugin, {
   AlloyFinger
 })
 
-Vue.use(VueImgLazyLoad, {
-  delayTime: 20
+Vue.use(VueLazyload, {
+  preLoad: 1.5,
+  loading: require('./assets/lazy.gif'),
+  throttleWait: 20
 })
 
 /* eslint-disable */
@@ -43,12 +57,6 @@ document.addEventListener('plusready',() => {
   },false)
 })
 /* eslint-enable */
-
-Vue.use(gallery, {
-  swipeThreshold: 100,
-  isIndexShow: false,
-  useCloseButton: false
-})
 
 Vue.config.productionTip = false
 
