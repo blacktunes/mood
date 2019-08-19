@@ -142,3 +142,10 @@ export function readReply (userName) {
     }
   })
 }
+
+export function getVersion () {
+  return axios({
+    method: 'get',
+    url: `${serverUrl}/getVersion`
+  })
+}
