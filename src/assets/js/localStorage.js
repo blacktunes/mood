@@ -45,3 +45,11 @@ export function delMessageList () {
 export function saveMessageList (messageList) {
   return setLocalStorage('messageList', messageList)
 }
+
+export function setSecondStart (flag) {
+  return setLocalStorage('secondStart', flag)
+}
+
+export function isSecondStart () {
+  return getLocalStorage('secondStart')
+}

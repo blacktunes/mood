@@ -15,7 +15,8 @@
     </div>
     <div class="label" :style="labelColor"></div>
     <div :class="messageCls">
-      <span class="message-text" v-html="item.addressee ? '回复 @' + item.addressee + ': ' + item.text : item.text"></span>
+      <span :class="ellipsis" class="message-text" v-html="item.addressee ? '回复 @' + item.addressee + ': ' + item.text : item.text" ref="messageText"></span>
+      <a class="message-text" v-if="isEllipsis">查看全文</a>
     </div>
     <div class="mseeage-pic-wrapper">
       <div :class="picCls" v-for="(pic, index) in item.pic" :key="index">
@@ -36,7 +37,8 @@ import { colorArr } from '@/assets/js/color'
 export default {
   data () {
     return {
-      initialIndex: 0
+      initialIndex: 0,
+      textHeight: 0
     }
   },
   props: {
@@ -51,11 +53,29 @@ export default {
     isReply: {
       type: Boolean,
       default: false
+    },
+    isIndex: {
+      type: Boolean,
+      default: false
     }
   },
   computed: {
     isDetail () {
       return this.$route.path === '/detail'
+    },
+    isEllipsis () {
+      if (this.textHeight >= 64 && this.isIndex) {
+        return true
+      } else {
+        return false
+      }
+    },
+    ellipsis () {
+      if (this.isIndex) {
+        return 'ellipsis'
+      } else {
+        return ''
+      }
     },
     labelColor () {
       return this.item.mood === 0 ? `border-color: transparent ${colorArr[0]} transparent transparent` : `border-color: transparent ${colorArr[this.item.mood]}`
@@ -123,6 +143,11 @@ export default {
       }
       this.$refs.message.style.background = '#fff'
     }
+  },
+  created () {
+    setTimeout(() => {
+      this.textHeight = this.$refs.messageText.offsetHeight
+    }, 20)
   }
 }
 </script>
@@ -177,8 +202,15 @@ title-class()
     width 95%
     margin 5px auto 10px auto
     .message-text
+      line-height 16px
       word-break break-all
       font-size 14px
+    .ellipsis
+      overflow hidden
+      display -webkit-box
+      -webkit-line-clamp 4
+      -webkit-box-orient vertical
+      margin-bottom 8px
   .label
     position absolute
     top 0

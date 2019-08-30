@@ -178,7 +178,7 @@ export default {
           height 70px
           background #bbb
           .img
-            height 100%
+            width 100%
         .source-info
           margin 7px 5px 5px 10px
           .source-name

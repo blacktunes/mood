@@ -1,15 +1,16 @@
 <template>
 <div>
   <transition name="inpit-slide-up">
-    <div class="message-input-wrapper" v-if="inputShow" @touchmove.stop>
+    <div class="message-input-wrapper" v-show="inputShow" @touchmove.stop>
       <div class="mask" @click="bgClick"></div>
       <div class="mask2"></div>
       <span class="add-pic cubeic-picture" @click="addPic"></span>
       <span class="pic-number" v-show="picNumberShow">{{picFiles.length}}</span>
       <cube-textarea class="message-input"
                      v-model="value"
-                     indicator="indicator"
-                     :maxlength="255"
+                     :indicator="indicator"
+                     :maxlength="99999"
+                     placeholder="这里可以写点什么"
                      ref="textarea"></cube-textarea>
       <input class="slider"
              type="range"
@@ -44,7 +45,7 @@
                  @files-added="filesAdded"
                  @file-error="fileError"
                  v-model="picFiles"></cube-upload>
-    <cube-button class="upload-btn" :outline="true" @click="getCamera">Camera</cube-button>
+    <cube-button class="upload-btn" :outline="true" :disabled="!appReady" @click="getCamera">Camera</cube-button>
     <cube-button class="upload-btn" :outline="true" @click="picUpload">Submit</cube-button>
   </div>
 </div>
@@ -60,11 +61,12 @@ import { colorArr } from '@/assets/js/color'
 export default {
   data () {
     return {
+      appReady: false,
       show: false,
       isAddPic: false,
       indicator: {
         negative: true,
-        remain: true
+        remain: false
       },
       value: '',
       pic: [],
@@ -74,6 +76,9 @@ export default {
       uploadAction: {
         target: `${serverUrl}/picUpload`,
         fileName: 'pic',
+        data: {
+          username: getUser()
+        },
         checkSuccess: (res) => {
           if (res.ERR_CODE === 0) {
             this.pic.push(res.filename)
@@ -109,31 +114,33 @@ export default {
     }),
     getCamera () {
       /* eslint-disable */
-      const camera = plus.camera.getCamera()
-      camera.captureImage((filePath) => {
-        plus.io.resolveLocalFileSystemURL(filePath, (entry) => {
-          let reader = null
-          entry.file((file) => {
-            reader = new plus.io.FileReader()
-            reader.readAsDataURL(file)
-            reader.onloadend = (e) => {
-              let arr = e.target.result.split(',')
-              let mime = arr[0].match(/:(.*?);/)[1]
-              let suffix = mime.split('/')[1]
-              let bstr = atob(arr[1])
-              let n = bstr.length
-              let u8arr = new Uint8Array(n)
-              while (n--) {
-                u8arr[n] = bstr.charCodeAt(n)
+      if (this.appReady) {
+        const camera = plus.camera.getCamera()
+        camera.captureImage((filePath) => {
+          plus.io.resolveLocalFileSystemURL(filePath, (entry) => {
+            let reader = null
+            entry.file((file) => {
+              reader = new plus.io.FileReader()
+              reader.readAsDataURL(file)
+              reader.onloadend = (e) => {
+                let arr = e.target.result.split(',')
+                let mime = arr[0].match(/:(.*?);/)[1]
+                let suffix = mime.split('/')[1]
+                let bstr = atob(arr[1])
+                let n = bstr.length
+                let u8arr = new Uint8Array(n)
+                while (n--) {
+                  u8arr[n] = bstr.charCodeAt(n)
+                }
+                const img = new File([u8arr], file.name, {
+                  type: mime
+                })
+                this.$refs.upload.addFiles([img])
               }
-              const img = new File([u8arr], file.name, {
-                type: mime
-              })
-              this.$refs.upload.addFiles([img])
-            }
+            })
           })
         })
-      })
+      }
       /* eslint-enable */
     },
     filesAdded (files) {
@@ -157,6 +164,15 @@ export default {
     },
     fileError (file) {
       console.log(file)
+      this.$refs.upload.pause()
+      if (this.uploadToast) {
+        this.uploadToast.hide()
+      }
+      this.$createToast({
+        txt: '上传失败',
+        time: 2000,
+        type: 'error'
+      }, false).show()
     },
     inputTouch () {
       this.$refs.likeIcon.style.transition = 'height 0.2s linear'
@@ -174,17 +190,17 @@ export default {
       this.$refs.tip.show()
     },
     bgClick () {
-      this.setInputShow(false)
-      this.value = ''
-      this.moodNum = 0
-      this.$refs.textarea.$el.children[0].style.border = ''
-      this.pic = []
-      this.picFiles = []
-      this.$refs.upload.pause()
-      this.isAddPic = false
-      if (this.uploadToast) {
-        this.uploadToast.hide()
-      }
+      this.$refs.textarea.blur()
+      setTimeout(() => {
+        this.setInputShow(false)
+        this.pic = []
+        this.picFiles = []
+        this.$refs.upload.pause()
+        this.isAddPic = false
+        if (this.uploadToast) {
+          this.uploadToast.hide()
+        }
+      }, 50)
     },
     btnClick () {
       if (this.value.length < 1 && this.picFiles.length < 1) {
@@ -221,27 +237,38 @@ export default {
       }
     },
     _addMessage () {
-      const toast = this.$createToast({
+      const errToast = this.$createToast({
         txt: '发送失败',
         time: 2000,
         type: 'error'
       }, false)
+      const toast = this.$createToast({
+        txt: '发送失败',
+        mask: true,
+        time: 0
+      }, false)
+      toast.show()
       addMessage({
         author: getUser(),
         text: this.value.replace(/\n|\r\n/g, '<br/>'),
         mood: this.$refs.slider.value,
         pic: this.pic.join('|')
       }).then((res) => {
-        if (res.status === 200) {
+        if (res.data.ERR_CODE === 0) {
           this.$emit('success')
           this.bgClick()
+          this.value = ''
+          this.moodNum = 0
+          this.$refs.textarea.$el.children[0].style.border = ''
+          toast.hide()
         } else {
-          toast.show()
+          toast.hide()
+          errToast.show()
         }
       })
         .catch((e) => {
           console.log(e)
-          toast.show()
+          errToast.show()
         })
     }
   },
@@ -264,6 +291,11 @@ export default {
       }
       animate()
     }
+  },
+  created () {
+    document.addEventListener('plusready', () => {
+      this.appReady = true
+    }, false)
   }
 }
 </script>

@@ -129,9 +129,21 @@ export default {
           this.replyList = res.data.replyList.reverse()
         }
       })
+        .catch(() => {
+          this.$createToast({
+            txt: '网络异常',
+            time: 2000,
+            type: 'error'
+          }).show()
+          this.loadingShow = false
+        })
     }
   },
   activated () {
+    if (!this.messageDetail.id) {
+      this.$router.push('/')
+      return
+    }
     this._getReply()
     setTimeout(() => {
       if (this.$route.query.author) {

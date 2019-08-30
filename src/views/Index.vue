@@ -22,9 +22,10 @@
                       :data="messageList"
                       :scroll-events="['scroll', 'scroll-end']"
                       ref="scroll">
+            <update-logs></update-logs>
             <transition-group name="fade">
               <div v-for="item in messageList" :key="item.id">
-                <message-list :item="item"></message-list>
+                <message-list :item="item" :is-index="true"></message-list>
               </div>
             </transition-group>
             <div class="text" v-show="listEmpty">暂无内容</div>
@@ -87,6 +88,7 @@ import HomeMenu from '@/components/home/menu'
 import MessageList from '@/components/home/message-list'
 import MessageButton from '@/components/home/message-button'
 import MessageInput from '@/components/home/message-input'
+import UpdateLogs from '@/components/home/update-logs'
 import { getMessageList, saveMessageList, getUser } from '@/assets/js/localStorage'
 import { mapMutations, mapState } from 'vuex'
 import { messageList, getNewMessage, moreMessageList } from '@/api/store'
@@ -99,14 +101,19 @@ export default {
       showNewMessageTip: false,
       maskShow: true,
       haveNewReply: false,
-      selectedLabel: 'Home'
+      selectedLabel: 'Home',
+      socketsErr: false
     }
   },
   sockets: {
     // 建立连接自动调用connect
-    connect: () => {
+    connect: function () {
       // 与socket.io连接后回调
       // console.log('conn')
+      this.socketsErr = false
+    },
+    connect_error: function () {
+      this.socketsErr = true
     },
     disconnect: () => {
       // console.log('disconn')
@@ -117,7 +124,8 @@ export default {
     HomeMenu,
     MessageList,
     MessageButton,
-    MessageInput
+    MessageInput,
+    UpdateLogs
   },
   computed: {
     ...mapState([
@@ -276,6 +284,7 @@ export default {
       }
     },
     onPullingUp () {
+      this.$refs.scroll.refresh()
       moreMessageList(this.messageList[this.messageList.length - 1].id).then((res) => {
         if (res.status === 200 && res.data.messageList.length > 0) {
           this.setMessageList(this.messageList.concat(res.data.messageList))
@@ -379,7 +388,7 @@ export default {
     }, 20)
   },
   created () {
-    this.$socket.emit('login', getUser())
+    this.$socket.emit('login', getUser() || '未注册用户')
     if (getUser()) {
       this.setIsLogin(true)
     } else {
@@ -396,6 +405,21 @@ export default {
       clearTimeout(this.i)
       this.timer = null
       this.i = null
+    }
+  },
+  watch: {
+    socketsErr (newVal) {
+      var socketsToast = this.$createToast({
+        txt: '服务器异常',
+        time: 0,
+        type: 'error',
+        mask: true
+      })
+      if (newVal) {
+        socketsToast.show()
+      } else {
+        socketsToast.hide()
+      }
     }
   }
 }

@@ -89,7 +89,11 @@ export default {
   },
   computed: {
     avatar () {
-      return 'https://www.feizhouxianyu.cn/mood/upload/' + this.username + '.png'
+      if (this.username) {
+        return 'https://www.feizhouxianyu.cn/mood/upload/' + this.username + '.png'
+      } else {
+        return ''
+      }
     }
   },
   activated () {

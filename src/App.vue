@@ -12,6 +12,7 @@
 <script type="text/ecmascript-6">
 import HomeHeader from '@/components/home/header'
 import { getVersion } from '@/api/store'
+import { setSecondStart } from '@/assets/js/localStorage'
 
 // 禁止鼠标右击事件
 window.addEventListener('contextmenu', (e) => {
@@ -49,6 +50,10 @@ export default {
       /* eslint-disable */
       plus.runtime.install(path, {}, () => {
           // console.log('安装wgt文件成功！')
+          setSecondStart(false)
+          plus.nativeUI.toast('<span>重启应用以完成更新</span>', {
+            type: 'richtext'
+          })
           plus.io.resolveLocalFileSystemURL( path, (entry) => {
             entry.remove(() => {
               // console.log('删除成功')
@@ -80,8 +85,8 @@ export default {
         this.version = inf.version
         console.log('当前应用版本：' + this.version)
         getVersion().then((res) => {
+          console.log('最新版本' + res.data)
           if (res.data > this.version) {
-            console.log('最新版本' + res.data)
             this.downWgt()
           }
         })
