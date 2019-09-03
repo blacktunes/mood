@@ -11,7 +11,8 @@
                      :indicator="indicator"
                      :maxlength="99999"
                      placeholder="这里可以写点什么"
-                     ref="textarea"></cube-textarea>
+                     ref="textarea"
+                     @input="messageInput"></cube-textarea>
       <input class="slider"
              type="range"
              min="0"
@@ -53,7 +54,7 @@
 
 <script type="text/ecmascript-6">
 import TWEEN from '@tweenjs/tween.js'
-import { getUser } from '@/assets/js/localStorage'
+import { getUser, saveMessage, getMessage, delMessage } from '@/assets/js/localStorage'
 import { mapState, mapMutations } from 'vuex'
 import { addMessage, serverUrl } from '@/api/store'
 import { colorArr } from '@/assets/js/color'
@@ -83,6 +84,9 @@ export default {
           if (res.ERR_CODE === 0) {
             this.pic.push(res.filename)
             if (this.pic.length === this.picFiles.length) {
+              if (this.uploadToast) {
+                this.uploadToast.hide()
+              }
               this._addMessage()
             }
             return true
@@ -112,6 +116,9 @@ export default {
       setInputShow: 'SET_INPUT_SHOW',
       setMessageList: 'SET_MESSAGE_LIST'
     }),
+    messageInput () {
+      saveMessage(this.value)
+    },
     getCamera () {
       /* eslint-disable */
       if (this.appReady) {
@@ -243,7 +250,7 @@ export default {
         type: 'error'
       }, false)
       const toast = this.$createToast({
-        txt: '发送失败',
+        txt: '正在发送...',
         mask: true,
         time: 0
       }, false)
@@ -260,6 +267,7 @@ export default {
           this.value = ''
           this.moodNum = 0
           this.$refs.textarea.$el.children[0].style.border = ''
+          delMessage()
           toast.hide()
         } else {
           toast.hide()
@@ -268,6 +276,7 @@ export default {
       })
         .catch((e) => {
           console.log(e)
+          toast.hide()
           errToast.show()
         })
     }
@@ -296,6 +305,9 @@ export default {
     document.addEventListener('plusready', () => {
       this.appReady = true
     }, false)
+    if (getMessage()) {
+      this.value = getMessage()
+    }
   }
 }
 </script>

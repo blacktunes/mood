@@ -53,3 +53,15 @@ export function setSecondStart (flag) {
 export function isSecondStart () {
   return getLocalStorage('secondStart')
 }
+
+export function saveMessage (message) {
+  return setLocalStorage('message', message)
+}
+
+export function delMessage () {
+  return removeLocalStorage('message')
+}
+
+export function getMessage () {
+  return getLocalStorage('message')
+}

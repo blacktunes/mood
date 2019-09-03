@@ -101,6 +101,17 @@ export default {
       if (this.value.length < 1) {
         return
       }
+      const errToast = this.$createToast({
+        txt: '发送失败',
+        time: 2000,
+        type: 'error'
+      }, false)
+      const replyTosat = this.$createToast({
+        txt: '正在发送...',
+        time: 0,
+        mask: true
+      })
+      replyTosat.show()
       addReply({
         id: this.messageDetail.id,
         text: this.value,
@@ -114,8 +125,13 @@ export default {
           this._getReply()
           this.value = ''
           this.addressee = null
+          replyTosat.hide()
         }
       })
+        .catch(() => {
+          replyTosat.hide()
+          errToast.show()
+        })
     },
     _getReply () {
       if (this.replyList.length < 1) {

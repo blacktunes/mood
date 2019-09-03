@@ -2,12 +2,10 @@
   <div class="logs-wrapper" v-show="logShow">
     <div class="logs" ref="logs">
       <div class="title">
-        <span>2019.8.30</span>
+        <span>2019.9.3</span>
       </div>
       <div class="text">
-        <p>更新各种异常提醒</p>
-        <p>修改输入框部分设置</p>
-        <p>首页增加折叠显示</p>
+        <p>增加输入框内容暂存功能</p>
       </div>
       <div class="btn">
         <a @click.prevent="logClose">我知道了</a>
