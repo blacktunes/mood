@@ -2,10 +2,11 @@
   <div class="logs-wrapper" v-show="logShow">
     <div class="logs" ref="logs">
       <div class="title">
-        <span>2019.9.4</span>
+        <span>2019.9.5</span>
       </div>
       <div class="text">
-        <p>修改输入框样式</p>
+        <p>修复长图导致的界面异常</p>
+        <p>添加长图显示标志</p>
       </div>
       <div class="btn">
         <a @click.prevent="logClose">我知道了</a>

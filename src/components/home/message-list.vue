@@ -21,6 +21,7 @@
     <div class="mseeage-pic-wrapper">
       <div :class="picCls" v-for="(pic, index) in item.pic" :key="index">
         <img :class="picCls2" v-lazy="pic.split('.' + pic.split('.').pop())[0] + '-less.jpg'" @click="handleImgsClick(index, item.pic)" @click.stop>
+        <long-pic class="long-pic" :pic="pic.split('.' + pic.split('.').pop())[0] + '-less.jpg'"></long-pic>
       </div>
     </div>
     <div class="message-btn" v-if="showBtn && !isReply">
@@ -33,8 +34,12 @@
 <script type="text/ecmascript-6">
 import { mapMutations } from 'vuex'
 import { colorArr } from '@/assets/js/color'
+import LongPic from './long-pic'
 
 export default {
+  components: {
+    LongPic
+  },
   data () {
     return {
       initialIndex: 0,
@@ -87,7 +92,7 @@ export default {
       return this.isReply ? 'reply-item' : 'message-item'
     },
     picCls () {
-      return this.item.pic.length === 1 ? '' : this.item.pic.length === 2 || this.item.pic.length === 4 ? 'message-pic2' : 'message-pic3'
+      return this.item.pic.length === 1 ? 'message-pic1' : this.item.pic.length === 2 || this.item.pic.length === 4 ? 'message-pic2' : 'message-pic3'
     },
     picCls2 () {
       return this.item.pic.length === 1 ? 'pic1' : 'pic'
@@ -121,9 +126,6 @@ export default {
       }
       this.setMessageDetail(this.item)
       this.$router.push('/detail')
-    },
-    loadImage () {
-      this.$emit('load-image')
     },
     // 下面三个方法为touch事件
     bgChange () {
@@ -229,18 +231,40 @@ title-class()
     margin auto
     .message-pic3
       flex 0 0 33.33%
+      max-height 120px
+      overflow hidden
+      position relative
       .pic
         width 100%
         margin 1.5px auto
+      .long-pic
+        position absolute
+        bottom 0
+        right 0
     .message-pic2
       flex 0 0 50%
+      max-height 180px
+      overflow hidden
+      position relative
       .pic
         width 100%
         margin 1.5px auto
-    .pic1
-      width 100%
-      max-width 375px
-      margin auto
+      .long-pic
+        position absolute
+        bottom 0
+        right 0
+    .message-pic1
+      max-height 275px
+      overflow hidden
+      position relative
+      .pic1
+        width 100%
+        max-width 375px
+        margin auto
+      .long-pic
+        position absolute
+        bottom 0
+        right 0
   .message-btn
     margin 10px auto 0 auto
     height 20px

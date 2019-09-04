@@ -131,7 +131,8 @@ export default {
     ...mapState([
       'isLogin',
       'messageList',
-      'inputShow'
+      'inputShow',
+      'longPicList'
     ]),
     tabs () {
       if (this.isLogin) {
@@ -220,7 +221,8 @@ export default {
   methods: {
     ...mapMutations({
       setIsLogin: 'SET_IS_LOGIN',
-      setMessageList: 'SET_MESSAGE_LIST'
+      setMessageList: 'SET_MESSAGE_LIST',
+      setLongPiclist: 'SET_LONG_PIC_LIST'
     }),
     showNewReply (flag) {
       this.haveNewReply = flag
@@ -259,10 +261,6 @@ export default {
     },
     iconClick () {
       this.$refs.menu.menuShow()
-    },
-    loadImage () {
-      // 图片加载完成时重新计算滚动高度，但是会导致下拉动画错误
-      // this.$refs.scroll.refresh()
     },
     scroll (e) {
       if (e.y < 0 && this.listEmpty) {
@@ -388,6 +386,16 @@ export default {
     }, 20)
   },
   created () {
+    this.$Lazyload.$on('loaded', (item) => {
+      if ((item.el.scrollHeight / item.el.scrollWidth) > 2) {
+        const temp = this.longPicList.slice()
+        if (temp.indexOf(item.src) !== -1) {
+          return
+        }
+        temp.push(item.src)
+        this.setLongPiclist(temp)
+      }
+    })
     this.$socket.emit('login', getUser() || '未注册用户')
     if (getUser()) {
       this.setIsLogin(true)

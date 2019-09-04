@@ -12,7 +12,9 @@ export default new Vuex.Store({
     messageList: [],
     // 是否首次启动
     firstStart: true,
-    messageDetail: {}
+    messageDetail: {},
+    // 长图列表
+    longPicList: []
   },
   mutations: {
     SET_INPUT_SHOW (state, flag) {
@@ -29,6 +31,9 @@ export default new Vuex.Store({
     },
     SET_MESSAGE_DETAIL (state, object) {
       state.messageDetail = object
+    },
+    SET_LONG_PIC_LIST (state, list) {
+      state.longPicList = list
     }
   },
   getters: {
