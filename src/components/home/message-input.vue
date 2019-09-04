@@ -13,24 +13,27 @@
                      placeholder="这里可以写点什么"
                      ref="textarea"
                      @input="messageInput"></cube-textarea>
-      <input class="slider"
-             type="range"
-             min="0"
-             max="100"
-             step="1"
-             value="50"
-             @input="change"
-             @touchstart="inputTouch"
-             @touchmove="inputMove"
-             ref="slider">
-      <span class="cubeic-like like-icon" @click="showTip"></span>
-      <div class="icon-mask" ref="likeIcon">
-        <span class="cubeic-like like-icon2" @click="showTip"></span>
+      <transition name="fade">
+        <input class="slider"
+              type="range"
+              min="0"
+              max="100"
+              step="1"
+              value="50"
+              @input="change"
+              @touchstart="inputTouch"
+              @touchmove="inputMove"
+              ref="slider"
+              v-show="moodShow">
+      </transition>
+      <span class="cubeic-like like-icon" ref="likeIcon" @click="showMood"></span>
+      <div class="icon-mask" ref="likeMask2">
+        <span class="cubeic-like like-icon2" ref="likeIcon2" @click="showMood"></span>
       </div>
-      <div class="icon-mask2" ref="likeIcon2">
-        <span class="cubeic-like like-icon3" @click="showTip"></span>
+      <div class="icon-mask2" ref="likeMask3">
+        <span class="cubeic-like like-icon3" @click="showMood"></span>
       </div>
-      <cube-tip :offsetLeft="37" ref="tip" direction="top" class="tip" >心情指数:{{numTween}}</cube-tip>
+      <cube-tip :offsetLeft="37" ref="tip" direction="top" class="tip" @click="showMood">心情指数:{{numTween}}</cube-tip>
     </div>
   </transition>
   <div class="icon-add" v-if="inputShow">
@@ -100,7 +103,8 @@ export default {
             return false
           }
         }
-      }
+      },
+      moodShow: false
     }
   },
   computed: {
@@ -182,19 +186,27 @@ export default {
       }, false).show()
     },
     inputTouch () {
-      this.$refs.likeIcon.style.transition = 'height 0.2s linear'
-      this.$refs.likeIcon2.style.transition = 'height 0.2s linear'
+      this.$refs.likeMask2.style.transition = 'height 0.2s linear'
+      this.$refs.likeMask3.style.transition = 'height 0.2s linear'
       this.$refs.slider.style.transition = 'background 0.2s linear'
       this.$refs.textarea.$el.children[0].style.transition = 'border 0.2s linear'
     },
     inputMove () {
-      this.$refs.likeIcon.style.transition = ''
-      this.$refs.likeIcon2.style.transition = ''
+      this.$refs.likeMask2.style.transition = ''
+      this.$refs.likeMask3.style.transition = ''
       this.$refs.slider.style.transition = ' 0.2s linear'
       this.$refs.textarea.$el.children[0].style.transition = ''
     },
     showTip () {
       this.$refs.tip.show()
+    },
+    showMood () {
+      this.moodShow = !this.moodShow
+      if (this.moodShow) {
+        this.$refs.tip.show()
+      } else {
+        this.$refs.tip.hide()
+      }
     },
     bgClick () {
       this.$refs.textarea.blur()
@@ -233,14 +245,16 @@ export default {
       this.$refs.slider.style.background = colorArr[mood]
       this.$refs.textarea.$el.children[0].style.border = `1.5px solid ${colorArr[mood]}`
       if (mood > 50) {
-        this.$refs.likeIcon.style.height = 24 * (mood - 50) / 50 + 'px'
-        this.$refs.likeIcon2.style.height = ''
+        this.$refs.likeMask2.style.height = 24 * (mood - 50) / 50 + 'px'
+        this.$refs.likeMask3.style.height = ''
+        this.$refs.likeIcon2.style.color = colorArr[mood]
       } else if (mood < 50) {
-        this.$refs.likeIcon2.style.height = 24 * mood / 50 + 'px'
-        this.$refs.likeIcon.style.height = ''
+        this.$refs.likeMask3.style.height = 24 * mood / 50 + 'px'
+        this.$refs.likeMask2.style.height = ''
+        this.$refs.likeIcon.style.color = colorArr[mood]
       } else {
-        this.$refs.likeIcon2.style.height = ''
-        this.$refs.likeIcon.style.height = ''
+        this.$refs.likeMask3.style.height = ''
+        this.$refs.likeMask2.style.height = ''
       }
     },
     _addMessage () {
@@ -322,28 +336,28 @@ export default {
     width 100vw
     .mask
       position absolute
-      bottom 210px
-      height calc(100% - 210px)
+      bottom 90%
+      height 10%
       width 100%
       z-index 450
     .mask2
       position absolute
       bottom 0
-      height 210px
+      height 90%
       width 100%
       border-radius 15px 15px 0 0
       background rgba(222,222,222,0.9)
     .add-pic
       position absolute
       left 25px
-      bottom 180px
+      bottom 32px
       z-index 500
       font-size 24px
       color #666
     .pic-number
       position absolute
-      left 48px
-      bottom 192px
+      left 47px
+      bottom 46px
       z-index 500
       width 15px
       height 15px
@@ -360,7 +374,8 @@ export default {
       margin auto
       bottom 75px
       width 90%
-      height 100px
+      min-height 300px
+      height calc(90% - 85px)
       box-shadow 0 0 1px 2px #ddd
       & >>> .cube-textarea
         border 1.5px solid transparent
@@ -376,14 +391,14 @@ export default {
   .slider
     position absolute
     bottom 42px
-    left 55px
+    left 100px
     z-index 1000
     background #fff
   input[type=range]
     // 去除浏览器默认的样式
     -webkit-appearance: none
     -moz-appearance: none
-    width: calc(100% - 135px)
+    width: calc(100% - 180px)
     border-radius: 10px
     &:focus
       // 去除落焦时的外边框效果
@@ -404,7 +419,7 @@ export default {
   .like-icon
     position absolute
     bottom 32px
-    left 25px
+    left 70px
     z-index 800
     font-size 24px
     color #000
@@ -412,7 +427,7 @@ export default {
     overflow hidden
     position absolute
     bottom 32px
-    left 25px
+    left 70px
     z-index 1000
     height 0
     width 24px
@@ -427,7 +442,7 @@ export default {
     overflow hidden
     position absolute
     bottom 32px
-    left 25px
+    left 70px
     z-index 900
     height 24px
     width 24px
@@ -441,7 +456,7 @@ export default {
   .tip
     position absolute
     bottom 4px
-    left 0px
+    left 45px
     font-size 11px
     padding 3px 8px
     & >>> .cube-tip-close
