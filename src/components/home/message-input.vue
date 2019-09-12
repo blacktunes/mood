@@ -12,7 +12,8 @@
                      :maxlength="99999"
                      placeholder="这里可以写点什么"
                      ref="textarea"
-                     @input="messageInput"></cube-textarea>
+                     @input="messageInput"
+                     @click.prevent></cube-textarea>
       <transition name="fade">
         <input class="slider"
               type="range"

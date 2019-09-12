@@ -195,17 +195,17 @@ title-class()
     margin 10px
     title-class()
   .reply-item
-    width 95%
+    width calc(100% - 67px)
     margin -5px auto 10px 67px
     .message-text
-      word-break break-all
+      word-break keep-all
       font-size 14px
   .message-item
     width 95%
     margin 5px auto 10px auto
     .message-text
       line-height 16px
-      word-break break-all
+      word-break normal
       font-size 14px
     .ellipsis
       overflow hidden

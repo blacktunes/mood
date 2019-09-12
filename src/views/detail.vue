@@ -27,9 +27,10 @@
                      ref="textarea"
                      @focus="focus"
                      @blur="blur"></cube-textarea>
-      <transition name="slide-up">
-        <div class="cubeic-right btn" v-show="btnShow" @click.stop.prevent="btnClick"></div>
-      </transition>
+      <transition-group name="slide-up">
+        <div class="cubeic-picture pic-btn" v-show="btnShow" @click.stop.prevent="picClick" key="1"></div>
+        <div class="cubeic-right right-btn" v-show="btnShow" @click.stop.prevent="rightClick" key="2"></div>
+      </transition-group>
     </div>
   </div>
 </template>
@@ -97,7 +98,8 @@ export default {
         this.placeholder = '请输入内容'
       }
     },
-    btnClick () {
+    picClick () {},
+    rightClick () {
       if (this.value.length < 1) {
         return
       }
@@ -202,11 +204,18 @@ export default {
         & >>> .cube-textarea
           background #eee
           padding-right 35px
-      .btn
+      .right-btn
         z-index 600
         position fixed
         bottom 10px
         right 10px
         font-size 25px
         color #666
+      .pic-btn
+        z-index 600
+        position fixed
+        bottom 10px
+        right 45px
+        font-size 25px
+        color #aaa
 </style>

@@ -12,7 +12,7 @@
                 ref="slide"
                 class="slide">
       <cube-slide-item>
-        <div :style="{height:indexHeight, transition:transition}" v-finger:swipe="swipeHandler">
+        <div :style="{height:indexHeight, transition:transition}">
           <cube-scroll class="index-scroll"
                       @pulling-down="onPullingDown"
                       @pulling-up="onPullingUp"
@@ -234,7 +234,7 @@ export default {
       } else {
         this.$refs.button.isHome = false
         this.selectedLabel = 'Message'
-        this.$refs.message._getUserReply('slideChange')
+        this.$refs.message._getUserReply('read')
         this.haveNewReply = false
       }
     },
@@ -254,11 +254,11 @@ export default {
           break
       }
     },
-    swipeHandler (e) {
-      if (e.direction === 'Right' && this.isLogin) {
-        this.iconClick()
-      }
-    },
+    // swipeHandler (e) {
+    //   if (e.direction === 'Right' && this.isLogin) {
+    //     this.iconClick()
+    //   }
+    // },
     iconClick () {
       this.$refs.menu.menuShow()
     },

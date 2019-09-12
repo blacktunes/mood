@@ -34,9 +34,11 @@ Vue.use(VueLazyload, {
 // HB打包返回键监听
 var firstBack = null
 document.addEventListener('plusready',() => {
-  plus.key.addEventListener("backbutton",(e) => {
+  plus.key.addEventListener('backbutton',(e) => {
     var nowHref = location.href.split('#')
-    if (nowHref[1] !== '/') {
+    if (store.state.inputShow) {
+      store.commit('SET_INPUT_SHOW', false)
+    } else if (nowHref[1] !== '/') {
       history.go(-1)
     } else {
       if (!firstBack) {
