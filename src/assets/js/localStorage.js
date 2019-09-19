@@ -46,12 +46,12 @@ export function saveMessageList (messageList) {
   return setLocalStorage('messageList', messageList)
 }
 
-export function setSecondStart (flag) {
-  return setLocalStorage('secondStart', flag)
+export function saveShowLog (flag) {
+  return setLocalStorage('showLog', flag)
 }
 
-export function isSecondStart () {
-  return getLocalStorage('secondStart')
+export function getShowLog () {
+  return getLocalStorage('showLog')
 }
 
 export function saveMessage (message) {
@@ -64,4 +64,28 @@ export function delMessage () {
 
 export function getMessage () {
   return getLocalStorage('message')
+}
+
+export function saveLoginInformation (object) {
+  return setLocalStorage('loginInformation', object)
+}
+
+export function delLoginInformation () {
+  return removeLocalStorage('loginInformation')
+}
+
+export function getLoginInformation () {
+  if (!getLocalStorage('loginInformation')) {
+    let today = new Date(new Date().toLocaleDateString()).getTime()
+    let object = {
+      secondDay: today + 24 * 60 * 60 * 1000,
+      thirdDay: today + 24 * 60 * 60 * 1000 * 2,
+      consecutiveLoginNum: 1,
+      isYesterdayLogin: false,
+      isTodayLogin: true,
+      loginTime: [new Date().getTime()]
+    }
+    saveLoginInformation(object)
+  }
+  return getLocalStorage('loginInformation')
 }

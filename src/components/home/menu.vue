@@ -22,6 +22,9 @@
               </cube-upload>
             </div>
             <div class="username">{{username}}</div>
+            <div class="login">
+              <span>已连续登陆{{consecutiveLoginNum}}天</span>
+            </div>
           </div>
           <div class="menu-list">
             <div class="menu-btn" @click="cleanMessage">
@@ -37,7 +40,7 @@
 </template>
 
 <script type="text/ecmascript-6">
-import { getUser, delMessageList, delUser } from '@/assets/js/localStorage'
+import { getUser, delMessageList, delUser, getLoginInformation } from '@/assets/js/localStorage'
 import { serverUrl } from '@/api/store'
 
 export default {
@@ -45,6 +48,7 @@ export default {
     return {
       menuVisible: false,
       username: '',
+      consecutiveLoginNum: 0,
       uploadAction: {
         target: `${serverUrl}/upload`,
         fileName: 'avatar',
@@ -98,6 +102,7 @@ export default {
   },
   activated () {
     this.username = getUser()
+    this.consecutiveLoginNum = getLoginInformation().consecutiveLoginNum
   }
 }
 </script>
@@ -136,6 +141,10 @@ export default {
           .upload-img
             width 100%
         .username
+          text-align center
+        .login
+          margin-top 8px
+          font-size 12px
           text-align center
       .menu-list
         margin 2px

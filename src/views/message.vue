@@ -88,6 +88,7 @@ export default {
     ]),
     options () {
       return {
+        directionLockThreshold: 0,
         pullDownRefresh: {
           threshold: 46,
           txt: this.pullDownTxt,

@@ -2,11 +2,12 @@
   <div class="logs-wrapper" v-show="logShow">
     <div class="logs" ref="logs">
       <div class="title">
-        <span>2019.9.5</span>
+        <span>2019.9.20</span>
       </div>
       <div class="text">
-        <p>修复长图导致的界面异常</p>
-        <p>添加长图显示标志</p>
+        <p>添加连续登录计数</p>
+        <p>添加升级确认</p>
+        <p>修复部分显示异常</p>
       </div>
       <div class="btn">
         <a @click.prevent="logClose">我知道了</a>
@@ -16,7 +17,7 @@
 </template>
 
 <script type="text/ecmascript-6">
-import { setSecondStart, isSecondStart } from '@/assets/js/localStorage'
+import { saveShowLog, getShowLog } from '@/assets/js/localStorage'
 
 export default {
   data () {
@@ -29,13 +30,14 @@ export default {
       this.$refs.logs.style['marginTop'] = `-${this.$refs.logs.offsetHeight}px`
       setTimeout(() => {
         this.logShow = false
-        setSecondStart(true)
+        saveShowLog(false)
       }, 200)
     }
   },
   created () {
-    this.logShow = !isSecondStart()
-    setSecondStart(true)
+    console.log(getShowLog())
+    this.logShow = getShowLog()
+    saveShowLog(false)
   }
 }
 </script>

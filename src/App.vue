@@ -12,7 +12,7 @@
 <script type="text/ecmascript-6">
 import HomeHeader from '@/components/home/header'
 import { getVersion } from '@/api/store'
-import { setSecondStart } from '@/assets/js/localStorage'
+import { saveShowLog } from '@/assets/js/localStorage'
 
 // 禁止鼠标右击事件
 window.addEventListener('contextmenu', (e) => {
@@ -50,7 +50,7 @@ export default {
       /* eslint-disable */
       plus.runtime.install(path, {}, () => {
           // console.log('安装wgt文件成功！')
-          setSecondStart(false)
+          saveShowLog(true)
           plus.nativeUI.toast('<span>重启应用以完成更新</span>', {
             type: 'richtext'
           })
@@ -58,7 +58,7 @@ export default {
             entry.remove(() => {
               // console.log('删除成功')
               // 重启应用
-              // plus.runtime.restart()
+              plus.runtime.restart()
             })
           })
       }, (e) => {
@@ -87,7 +87,30 @@ export default {
         getVersion().then((res) => {
           console.log('最新版本' + res.data)
           if (res.data > this.version) {
-            this.downWgt()
+            this.$createDialog({
+              type: 'confirm',
+              title: '发现新版本，是否更新',
+              confirmBtn: {
+                text: '立刻更新',
+                active: true,
+                disabled: false,
+                href: 'javascript:;'
+              },
+              cancelBtn: {
+                text: '算了',
+                active: false,
+                disabled: false,
+              },
+              onConfirm: () => {
+                this.downWgt()
+                this.$createToast({
+                  type: 'loading',
+                  time: 0,
+                  txt: '正在更新',
+                  mask: true
+                }).show()
+              }
+            }).show()
           }
         })
       })

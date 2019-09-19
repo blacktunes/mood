@@ -35,7 +35,7 @@ import {
   // DatePicker,
   // TimePicker,
   // SegmentPicker,
-  // Dialog,
+  Dialog,
   // ActionSheet,
   // Drawer,
   ImagePreview,
@@ -74,7 +74,7 @@ Vue.use(Toast)
 // Vue.use(DatePicker)
 // Vue.use(TimePicker)
 // Vue.use(SegmentPicker)
-// Vue.use(Dialog)
+Vue.use(Dialog)
 // Vue.use(ActionSheet)
 // Vue.use(Drawer)
 Vue.use(ImagePreview)

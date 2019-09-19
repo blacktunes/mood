@@ -89,7 +89,7 @@ import MessageList from '@/components/home/message-list'
 import MessageButton from '@/components/home/message-button'
 import MessageInput from '@/components/home/message-input'
 import UpdateLogs from '@/components/home/update-logs'
-import { getMessageList, saveMessageList, getUser } from '@/assets/js/localStorage'
+import { getMessageList, saveMessageList, getUser, getLoginInformation, saveLoginInformation } from '@/assets/js/localStorage'
 import { mapMutations, mapState } from 'vuex'
 import { messageList, getNewMessage, moreMessageList } from '@/api/store'
 
@@ -185,6 +185,7 @@ export default {
     },
     slideOptions () {
       return {
+        directionLockThreshold: 0,
         listenScroll: true,
         probeType: 3,
         flickLimitDistance: 1,
@@ -193,6 +194,7 @@ export default {
     },
     options () {
       return {
+        directionLockThreshold: 0,
         pullDownRefresh: this.pullDownRefreshOptions,
         pullUpLoad: this.pullUpLoadOptions
       }
@@ -372,6 +374,34 @@ export default {
       })
       this.setMessageList(tempList)
       saveMessageList(tempList)
+    },
+    _login () {
+      const loginInformation = getLoginInformation()
+      const nowTime = new Date().getTime()
+      if (nowTime < loginInformation.secondDay) {
+        return
+      }
+      const today = new Date(new Date().toLocaleDateString()).getTime()
+      const secondDay = today + 24 * 60 * 60 * 1000
+      const thirdDay = today + 24 * 60 * 60 * 1000 * 2
+      if (nowTime > loginInformation.thirdDay) {
+        loginInformation.secondDay = secondDay
+        loginInformation.thirdDay = thirdDay
+        loginInformation.isYesterdayLogin = false
+        loginInformation.consecutiveLoginNum = 0
+        loginInformation.isTodayLogin = false
+      } else if (nowTime > loginInformation.secondDay) {
+        loginInformation.secondDay = secondDay
+        loginInformation.thirdDay = thirdDay
+        loginInformation.isYesterdayLogin = true
+        loginInformation.consecutiveLoginNum += 1
+        loginInformation.isTodayLogin = false
+      }
+      if (!loginInformation.isTodayLogin) {
+        loginInformation.loginTime.push(nowTime)
+        loginInformation.isTodayLogin = true
+      }
+      saveLoginInformation(loginInformation)
     }
   },
   activated () {
@@ -398,6 +428,7 @@ export default {
     })
     this.$socket.emit('login', getUser() || '未注册用户')
     if (getUser()) {
+      this._login()
       this.setIsLogin(true)
     } else {
       this.setIsLogin(false)

@@ -231,12 +231,15 @@ title-class()
     margin auto
     .message-pic3
       flex 0 0 33.33%
-      max-height 120px
+      height 120px
       overflow hidden
       position relative
+      display flex
+      align-items center
+      background rgba(200, 200, 200, 0.3)
       .pic
         width 100%
-        margin 1.5px auto
+        margin 1.5px
       .long-pic
         position absolute
         bottom 0
@@ -246,9 +249,12 @@ title-class()
       max-height 180px
       overflow hidden
       position relative
+      display flex
+      align-items center
+      background rgba(200, 200, 200, 0.3)
       .pic
         width 100%
-        margin 1.5px auto
+        margin 1.5px
       .long-pic
         position absolute
         bottom 0
