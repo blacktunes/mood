@@ -24,7 +24,7 @@
               </div>
             </div>
             <div class="message-item">
-              <span class="message-text" v-html="item.addressee ? '回复 @' + item.addressee + ': ' + item.text : item.text"></span>
+              <span class="message-text" v-html="item.addressee && item.pic ? '回复 @' + item.addressee + ': ' + item.text + '[图片]' : item.addressee ? '回复 @' + item.addressee + ': ' + item.text : item.pic ? item.text + '[图片]' : item.text"></span>
             </div>
             <div class="reply-item" v-show="item.addressee">
               <span class="message-text" v-html="item.addresseeText"></span>

@@ -5,8 +5,8 @@
         <span>2019.9.20</span>
       </div>
       <div class="text">
-        <p>添加连续登录计数</p>
-        <p>添加升级确认</p>
+        <p>优化图片上传功能</p>
+        <p>添加回复图片上传功能</p>
         <p>修复部分显示异常</p>
       </div>
       <div class="btn">
@@ -35,7 +35,6 @@ export default {
     }
   },
   created () {
-    console.log(getShowLog())
     this.logShow = getShowLog()
     saveShowLog(false)
   }

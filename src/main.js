@@ -27,6 +27,7 @@ Vue.use(AlloyFingerPlugin, {
 Vue.use(VueLazyload, {
   preLoad: 1.5,
   loading: require('./assets/lazy.gif'),
+  error: require('./assets/error.png'),
   throttleWait: 20
 })
 

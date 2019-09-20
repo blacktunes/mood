@@ -30,7 +30,13 @@
       <transition-group name="slide-up">
         <div class="cubeic-picture pic-btn" v-show="btnShow" @click.stop.prevent="picClick" key="1"></div>
         <div class="cubeic-right right-btn" v-show="btnShow" @click.stop.prevent="rightClick" key="2"></div>
+        <span class="pic-number" v-show="btnShow && picNum !== 0" key="3">{{picNum}}</span>
       </transition-group>
+      <upload @success="uploadSuccess"
+              @pic-num="picChange"
+              :maxUpload="1"
+              v-show="false"
+              ref="upload"></upload>
     </div>
   </div>
 </template>
@@ -40,10 +46,12 @@ import { mapState } from 'vuex'
 import messageList from '@/components/home/message-list'
 import { addReply, getReply } from '@/api/store'
 import { getUser } from '@/assets/js/localStorage'
+import Upload from '@/components/home/upload'
 
 export default {
   components: {
-    messageList
+    messageList,
+    Upload
   },
   data () {
     return {
@@ -53,7 +61,9 @@ export default {
       addresseeText: null,
       btnShow: false,
       replyList: [],
-      loadingShow: false
+      loadingShow: false,
+      pic: '',
+      picNum: 0
     }
   },
   computed: {
@@ -72,6 +82,22 @@ export default {
     }
   },
   methods: {
+    picChange (num) {
+      this.picNum = num
+      if (num > 0) {
+        this.$refs.textarea.$el.style.height = '80px'
+        this.btnShow = true
+      } else {
+        this.$refs.textarea.$el.style.height = ''
+        this.btnShow = false
+        this.$refs.textarea.focus()
+      }
+    },
+    uploadSuccess (filename) {
+      this.pic = filename
+      this.$refs.upload.toastHide()
+      this._addReply()
+    },
     replyClick (item) {
       if (this.value.length > 0) {
         return
@@ -98,11 +124,24 @@ export default {
         this.placeholder = '请输入内容'
       }
     },
-    picClick () {},
+    picClick () {
+      if (this.picNum < 1) {
+        this.$refs.upload.addPic()
+      } else {
+        this.$refs.upload.delPic()
+      }
+    },
     rightClick () {
-      if (this.value.length < 1) {
+      if (this.value.length < 1 && this.picNum < 1) {
         return
       }
+      if (this.picNum > 0) {
+        this.$refs.upload.start()
+      } else {
+        this._addReply()
+      }
+    },
+    _addReply () {
       const errToast = this.$createToast({
         txt: '发送失败',
         time: 2000,
@@ -116,7 +155,8 @@ export default {
       replyTosat.show()
       addReply({
         id: this.messageDetail.id,
-        text: this.value,
+        text: this.value.replace(/\n|\r\n/g, '<br/>'),
+        pic: this.pic,
         author: getUser(),
         addressee: this.addressee,
         addresseeText: this.addresseeText,
@@ -128,6 +168,7 @@ export default {
           this.value = ''
           this.addressee = null
           replyTosat.hide()
+          this.$refs.upload.picFiles = []
         }
       })
         .catch(() => {
@@ -171,6 +212,9 @@ export default {
         this.addresseeText = this.$route.query.text
       }
     }, 350)
+  },
+  deactivated () {
+    this.$refs.upload.picFiles = []
   }
 }
 </script>
@@ -217,5 +261,18 @@ export default {
         bottom 10px
         right 45px
         font-size 25px
-        color #aaa
+        color #666
+      .pic-number
+        position absolute
+        right 36px
+        bottom 24px
+        z-index 500
+        width 15px
+        height 15px
+        border-radius 50%
+        background #666
+        color #eeeeee
+        font-size 10px
+        line-height 16px
+        text-align center
 </style>

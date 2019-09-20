@@ -411,9 +411,7 @@ export default {
     } else {
       this.setIsLogin(false)
     }
-    setTimeout(() => {
-      this.$refs.slide.refresh()
-    }, 20)
+    this.$refs.slide.refresh()
   },
   created () {
     this.$Lazyload.$on('loaded', (item) => {

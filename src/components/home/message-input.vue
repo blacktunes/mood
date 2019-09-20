@@ -5,7 +5,7 @@
       <div class="mask" @click="bgClick"></div>
       <div class="mask2"></div>
       <span class="add-pic cubeic-picture" @click="addPic"></span>
-      <span class="pic-number" v-show="picNumberShow">{{picFiles.length}}</span>
+      <span class="pic-number" v-show="picNum !== 0">{{picNum}}</span>
       <cube-textarea class="message-input"
                      v-model="value"
                      :indicator="indicator"
@@ -40,19 +40,11 @@
   <div class="icon-add" v-if="inputShow">
     <i class="cubeic-right icon" @click="btnClick"></i>
   </div>
-  <div class="pic-upload" v-show="isAddPic" @touchmove.stop>
-    <cube-upload class="upload"
-                 :max="9"
-                 :auto="false"
-                 :action="uploadAction"
-                 :multiple="true"
-                 ref="upload"
-                 @files-added="filesAdded"
-                 @file-error="fileError"
-                 v-model="picFiles"></cube-upload>
-    <cube-button class="upload-btn" :outline="true" :disabled="!appReady" @click="getCamera">Camera</cube-button>
-    <cube-button class="upload-btn" :outline="true" @click="picUpload">Submit</cube-button>
-  </div>
+  <upload v-show="isAddPic"
+          @submit="submit"
+          @pic-num="picChange"
+          @success="uploadSuccess"
+          ref="upload"></upload>
 </div>
 </template>
 
@@ -60,10 +52,14 @@
 import TWEEN from '@tweenjs/tween.js'
 import { getUser, saveMessage, getMessage, delMessage } from '@/assets/js/localStorage'
 import { mapState, mapMutations } from 'vuex'
-import { addMessage, serverUrl } from '@/api/store'
+import { addMessage } from '@/api/store'
 import { colorArr } from '@/assets/js/color'
+import Upload from './upload'
 
 export default {
+  components: {
+    Upload
+  },
   data () {
     return {
       appReady: false,
@@ -75,46 +71,16 @@ export default {
       },
       value: '',
       pic: [],
-      picFiles: [],
+      picNum: 0,
       moodNum: 0,
       numTween: 0,
-      uploadAction: {
-        target: `${serverUrl}/picUpload`,
-        fileName: 'pic',
-        data: {
-          username: getUser()
-        },
-        checkSuccess: (res) => {
-          if (res.ERR_CODE === 0) {
-            this.pic.push(res.filename)
-            if (this.pic.length === this.picFiles.length) {
-              if (this.uploadToast) {
-                this.uploadToast.hide()
-              }
-              this._addMessage()
-            }
-            return true
-          } else {
-            this.uploadToast.hide()
-            this.$createToast({
-              txt: '未知错误',
-              time: 2000,
-              type: 'error'
-            }, false).show()
-            return false
-          }
-        }
-      },
       moodShow: false
     }
   },
   computed: {
     ...mapState([
       'inputShow'
-    ]),
-    picNumberShow () {
-      return this.picFiles.length > 0
-    }
+    ])
   },
   methods: {
     ...mapMutations({
@@ -124,67 +90,21 @@ export default {
     messageInput () {
       saveMessage(this.value)
     },
-    getCamera () {
-      /* eslint-disable */
-      if (this.appReady) {
-        const camera = plus.camera.getCamera()
-        camera.captureImage((filePath) => {
-          plus.io.resolveLocalFileSystemURL(filePath, (entry) => {
-            let reader = null
-            entry.file((file) => {
-              reader = new plus.io.FileReader()
-              reader.readAsDataURL(file)
-              reader.onloadend = (e) => {
-                let arr = e.target.result.split(',')
-                let mime = arr[0].match(/:(.*?);/)[1]
-                let suffix = mime.split('/')[1]
-                let bstr = atob(arr[1])
-                let n = bstr.length
-                let u8arr = new Uint8Array(n)
-                while (n--) {
-                  u8arr[n] = bstr.charCodeAt(n)
-                }
-                const img = new File([u8arr], file.name, {
-                  type: mime
-                })
-                this.$refs.upload.addFiles([img])
-              }
-            })
-          })
-        })
+    uploadSuccess (filename) {
+      this.pic.push(filename)
+      if (this.pic.length === this.picNum) {
+        this.$refs.upload.toastHide()
+        this._addMessage()
       }
-      /* eslint-enable */
     },
-    filesAdded (files) {
-      // 上传文件校验
-      // const file = files[0]
-      // if (file.size > 500 * 1024) {
-      //   file.ignore = true
-      //   this.$createToast({
-      //     type: 'warn',
-      //     time: 1000,
-      //     txt: 'You selected > 500k files'
-      //   }).show()
-      // }
-      // file && this.$refs.upload.removeFile(file)
+    picChange (num) {
+      this.picNum = num
     },
     addPic () {
       this.isAddPic = true
     },
-    picUpload () {
+    submit () {
       this.isAddPic = false
-    },
-    fileError (file) {
-      console.log(file)
-      this.$refs.upload.pause()
-      if (this.uploadToast) {
-        this.uploadToast.hide()
-      }
-      this.$createToast({
-        txt: '上传失败',
-        time: 2000,
-        type: 'error'
-      }, false).show()
     },
     inputTouch () {
       this.$refs.likeMask2.style.transition = 'height 0.2s linear'
@@ -214,7 +134,7 @@ export default {
       setTimeout(() => {
         this.setInputShow(false)
         this.pic = []
-        this.picFiles = []
+        this.$refs.upload.picFiles = []
         this.$refs.upload.pause()
         this.isAddPic = false
         if (this.uploadToast) {
@@ -223,18 +143,12 @@ export default {
       }, 50)
     },
     btnClick () {
-      if (this.value.length < 1 && this.picFiles.length < 1) {
+      if (this.value.length < 1 && this.picNum < 1) {
         return
       }
-      if (this.picFiles.length > 0) {
+      if (this.picNum > 0) {
         this.$refs.upload.start()
         this.isAddPic = true
-        this.uploadToast = this.$createToast({
-          txt: '正在上传图片···',
-          time: 0,
-          mask: true
-        }, false)
-        this.uploadToast.show()
       } else {
         this._addMessage()
       }
@@ -317,9 +231,6 @@ export default {
     }
   },
   created () {
-    document.addEventListener('plusready', () => {
-      this.appReady = true
-    }, false)
     if (getMessage()) {
       this.value = getMessage()
     }

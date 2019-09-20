@@ -51,9 +51,9 @@ export default {
       plus.runtime.install(path, {}, () => {
           // console.log('安装wgt文件成功！')
           saveShowLog(true)
-          plus.nativeUI.toast('<span>重启应用以完成更新</span>', {
-            type: 'richtext'
-          })
+          // plus.nativeUI.toast('<span>重启应用以完成更新</span>', {
+          //   type: 'richtext'
+          // })
           plus.io.resolveLocalFileSystemURL( path, (entry) => {
             entry.remove(() => {
               // console.log('删除成功')
