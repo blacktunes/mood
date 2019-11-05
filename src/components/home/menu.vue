@@ -1,5 +1,5 @@
 <template>
-  <transition name="fade">
+  <transition name="menu">
     <div class="menu-wrapper" v-show="menuVisible" v-finger:swipe="swipeHandler">
       <transition name="menu-slide-right">
         <div class="menu" v-if="menuVisible">
@@ -35,6 +35,9 @@
         </div>
       </transition>
       <div class="mask" @click="menuShow"></div>
+      <transition name="fade">
+        <div class="mask2" v-if="menuVisible"></div>
+      </transition>
     </div>
   </transition>
 </template>
@@ -113,12 +116,11 @@ export default {
     position absolute
     left 0
     top 0
-    z-index 1000
     width 100%
     height 100%
     display flex
-    background rgba(0, 0, 0, 0.3)
     .menu
+      z-index 1000
       position relative
       flex 0 0 60%
       width 60%
@@ -178,6 +180,16 @@ export default {
             transform: scale(10, 10);
             transition: transform .3s, opacity .5s;
     .mask
+      z-index 1000
       flex 0 0 40%
       width 40%
+    .mask2
+      z-index 500
+      position fixed
+      width 100%
+      height 100%
+      background rgba(0, 0, 0, 0.3)
+
+.menu-enter-active, .menu-leave-active
+  transition all .2s linear
 </style>

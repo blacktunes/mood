@@ -90,7 +90,6 @@ export default {
       } else {
         this.$refs.textarea.$el.style.height = ''
         this.btnShow = false
-        this.$refs.textarea.focus()
       }
     },
     uploadSuccess (filename) {
@@ -169,6 +168,7 @@ export default {
           this.addressee = null
           replyTosat.hide()
           this.$refs.upload.picFiles = []
+          this.pic = ''
         }
       })
         .catch(() => {
@@ -204,14 +204,14 @@ export default {
       return
     }
     this._getReply()
-    setTimeout(() => {
-      if (this.$route.query.author) {
+    if (this.$route.query.author) {
+      setTimeout(() => {
         this.$refs.textarea.focus()
         this.placeholder = '回复 @' + this.$route.query.author + ':'
         this.addressee = this.$route.query.author
         this.addresseeText = this.$route.query.text
-      }
-    }, 350)
+      }, 350)
+    }
   },
   deactivated () {
     this.$refs.upload.picFiles = []

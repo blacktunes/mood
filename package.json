@@ -11,6 +11,7 @@
     "@tweenjs/tween.js": "^17.3.0",
     "alloyfinger": "^0.1.16",
     "axios": "^0.18.0",
+    "cos-js-sdk-v5": "^0.5.20",
     "cube-ui": "~1.12.1",
     "default-passive-events": "^1.0.10",
     "stylus": "^0.54.5",

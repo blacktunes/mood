@@ -20,8 +20,8 @@
     </div>
     <div class="mseeage-pic-wrapper">
       <div :class="picCls" v-for="(pic, index) in item.pic" :key="index">
-        <img :class="picCls2" v-lazy="pic.split('.' + pic.split('.').pop())[0] + '-less.jpg'" @click="handleImgsClick(index, item.pic)" @click.stop>
-        <long-pic class="long-pic" :pic="pic.split('.' + pic.split('.').pop())[0] + '-less.jpg'"></long-pic>
+        <img :class="picCls2" v-lazy="pic + '?imageMogr2/thumbnail/x275/auto-orient'" @click="handleImgsClick(index, item.pic)" @click.stop>
+        <long-pic class="long-pic" :pic="pic + '?imageMogr2/thumbnail/x275/auto-orient'"></long-pic>
       </div>
     </div>
     <div class="message-btn" v-if="showBtn && !isReply">
@@ -125,7 +125,9 @@ export default {
         return
       }
       this.setMessageDetail(this.item)
-      this.$router.push('/detail')
+      setTimeout(() => {
+        this.$router.push('/detail')
+      }, 50)
     }
     // // 下面三个方法为touch事件
     // bgChange () {
@@ -196,7 +198,7 @@ title-class()
     width calc(100% - 67px)
     margin -5px auto 10px 67px
     .message-text
-      word-break keep-all
+      word-break break-all
       font-size 14px
   .message-item
     width 95%

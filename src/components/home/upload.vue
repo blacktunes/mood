@@ -3,11 +3,8 @@
     <cube-upload class="upload"
                  :max="maxUpload"
                  :auto="false"
-                 :action="uploadAction"
                  :multiple="true"
                  ref="upload"
-                 @files-added="filesAdded"
-                 @file-error="fileError"
                  v-model="picFiles"></cube-upload>
     <cube-button class="upload-btn" :outline="true" :disabled="!appReady" @click="getCamera">Camera</cube-button>
     <cube-button class="upload-btn" :outline="true" @click="submitClick">Submit</cube-button>
@@ -15,8 +12,7 @@
 </template>
 
 <script type="text/ecmascript-6">
-import { getUser } from '@/assets/js/localStorage'
-import { serverUrl } from '@/api/store'
+import COS from 'cos-js-sdk-v5'
 
 export default {
   props: {
@@ -28,28 +24,7 @@ export default {
   data () {
     return {
       appReady: false,
-      picFiles: [],
-      uploadAction: {
-        target: `${serverUrl}/picUpload`,
-        fileName: 'pic',
-        data: {
-          username: getUser()
-        },
-        checkSuccess: (res) => {
-          if (res.ERR_CODE === 0) {
-            this.$emit('success', res.filename)
-            return true
-          } else {
-            this.uploadToast.hide()
-            this.$createToast({
-              txt: '未知错误',
-              time: 2000,
-              type: 'error'
-            }, false).show()
-            return false
-          }
-        }
-      }
+      picFiles: []
     }
   },
   methods: {
@@ -63,7 +38,7 @@ export default {
       this.uploadToast.hide()
     },
     start () {
-      this.$refs.upload.start()
+      this.upload(0)
       this.uploadToast = this.$createToast({
         txt: '正在上传图片···',
         time: 0,
@@ -71,33 +46,37 @@ export default {
       }, false)
       this.uploadToast.show()
     },
+    upload (i) {
+      if (i < this.picFiles.length) {
+        const filename = 'pic-' + Date.now() + '.' + this.picFiles[i].name.split('.').pop()
+        this.picFiles[i].status = 'uploading'
+        this.cos.putObject({
+          Bucket: 'mood-1256427935',
+          Region: 'ap-guangzhou',
+          Key: filename,
+          Body: this.picFiles[i].file,
+          onProgress: (progressData) => {
+            this.picFiles[i].progress = progressData.percent
+          }
+        }, (err, data) => {
+          if (!err) {
+            this.picFiles[i].status = 'success'
+            this.$emit('success', filename)
+            i++
+            this.upload(i)
+          } else {
+            this.uploadToast.hide()
+            this.$createToast({
+              txt: '上传失败',
+              time: 2000,
+              type: 'error'
+            }, false).show()
+          }
+        })
+      }
+    },
     pause () {
       this.$refs.upload.pause()
-    },
-    filesAdded (files) {
-      // 上传文件校验
-      // const file = files[0]
-      // if (file.size > 500 * 1024) {
-      //   file.ignore = true
-      //   this.$createToast({
-      //     type: 'warn',
-      //     time: 1000,
-      //     txt: 'You selected > 500k files'
-      //   }).show()
-      // }
-      // file && this.$refs.upload.removeFile(file)
-    },
-    fileError (file) {
-      console.log(file)
-      this.$refs.upload.pause()
-      if (this.uploadToast) {
-        this.uploadToast.hide()
-      }
-      this.$createToast({
-        txt: '上传失败',
-        time: 2000,
-        type: 'error'
-      }, false).show()
     },
     getCamera () {
       /* eslint-disable */
@@ -143,6 +122,10 @@ export default {
     document.addEventListener('plusready', () => {
       this.appReady = true
     }, false)
+    this.cos = new COS({
+      SecretId: 'AKIDtYkgMnrMQHuHrXpGkRt64rOjpV5RJP0M',
+      SecretKey: 'av0VlbDaZJp5A0h8VeZS7XtoV2JLkbDl'
+    })
   }
 }
 </script>

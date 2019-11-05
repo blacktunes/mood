@@ -46,8 +46,10 @@ export default {
     margin auto
     font-size 20px
   .icon
+    width 35px
+    height 25px
     position fixed
     top 10px
-    left 5px
+    left 10px
     color #666
 </style>

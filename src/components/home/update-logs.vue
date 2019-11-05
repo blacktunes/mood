@@ -2,12 +2,11 @@
   <div class="logs-wrapper" v-show="logShow">
     <div class="logs" ref="logs">
       <div class="title">
-        <span>2019.9.20</span>
+        <span>2019.11.6</span>
       </div>
       <div class="text">
-        <p>优化图片上传功能</p>
-        <p>添加回复图片上传功能</p>
-        <p>修复部分显示异常</p>
+        <p>图片上传/浏览迁移至对象存储，大大减少上传/加载时间</p>
+        <p>(图片加载失败请清除一次数据缓存)</p>
       </div>
       <div class="btn">
         <a @click.prevent="logClose">我知道了</a>

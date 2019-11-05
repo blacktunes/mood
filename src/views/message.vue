@@ -32,7 +32,7 @@
             <div class="source-wrapper">
               <div class="source-item">
                 <div class="source-img">
-                  <img class="img" :src="item.source.pic ? item.source.pic[0].split('.' + item.source.pic[0].split('.').pop())[0] + '-less.jpg' : item.source.img">
+                  <img class="img" :src="item.source.pic ? item.source.pic[0] + '?imageMogr2/thumbnail/x70/auto-orient' : item.source.img">
                 </div>
                 <div class="source-info">
                   <div class="source-name">
@@ -234,6 +234,9 @@ export default {
         .source-img
           overflow hidden
           flex 0 0 70px
+          display flex
+          flex-direction column
+          justify-content center
           width 70px
           height 70px
           background #bbb
@@ -246,7 +249,12 @@ export default {
             margin-bottom 5px
           .source-text
             font-size 12px
+            line-height 15px
             color #555
+            overflow hidden
+            display -webkit-box
+            -webkit-line-clamp 3
+            -webkit-box-orient vertical
 
 .cube-pulldown-wrapper
   text-align: center
