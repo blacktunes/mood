@@ -118,7 +118,13 @@ export default {
           }
         }
       }
-      this.$createImagePreview({ ...params }).show()
+      const imagePreview = this.$createImagePreview({ ...params })
+      imagePreview.show()
+      /* eslint-disable */
+      plus.key.addEventListener('backbutton', (e) => {
+        imagePreview.hide()
+      }, true)
+      /* eslint-enable */
     },
     click () {
       if (this.$route.path === '/detail') {

@@ -246,6 +246,8 @@ export default {
     tabClick (label) {
       if (label === 'Home' && this.$refs.slide.currentPageIndex === 0) {
         this.$refs.scroll.scrollTo(0, 0, 500)
+        // cube-ui的BS暂时没升级1.14.0
+        // this.$refs.scroll.scroll.autoPullDownRefresh()
       }
     },
     changeHandler (label) {
@@ -301,7 +303,11 @@ export default {
           if (numRes.data.newMessage > 0) {
             messageList(this.messageId).then((res) => {
               if (res.status === 200) {
-                this.listLength = numRes.data.newMessage
+                if (this.messageId === 0) {
+                  this.listLength = '30+'
+                } else {
+                  this.listLength = numRes.data.newMessage
+                }
                 this.$refs.scroll.disable()
                 this.setMessageList(res.data.messageList.concat(this.messageList))
                 saveMessageList(this.messageList)

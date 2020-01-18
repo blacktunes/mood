@@ -44,9 +44,7 @@ document.addEventListener('plusready',() => {
     } else {
       if (!firstBack) {
         firstBack = new Date().getTime()
-        plus.nativeUI.toast('<span>再按一次返回退出应用</span>', {
-          type: 'richtext'
-        })
+        plus.nativeUI.toast('再按一次返回退出应用')
         setTimeout(() => {
           firstBack = null
         }, 2000)
